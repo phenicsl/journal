@@ -1,0 +1,40 @@
+* Language
+
+* Package
+
+* Tools
+** How to install python packages?
+   Install python-setuptools firstly, then use easy_install to install packages
+   listed on http://pypi.python.org. For example, if you want to instlal
+   multitask, then use the command below:
+#+BEGIN_SRC sh
+   easy_install multitask
+#+END_SRC
+   easy_install will download and intall the package, dependences will be
+   solved automatically.
+
+** How to use sphinx and autodocument?
+   1. Install sphinx with command:
+#+BEGIN_SRC sh
+      easy_install sphinx
+#+END_SRC
+
+   2. Make a initialize configuration with:
+#+BEGIN_SRC sh
+    sphinx-quitstart
+#+END_SRC
+    It will ask several questions about the configuration, generate the
+    configuration file and also will generate the Makefile.
+
+   3. Make sure the package you are going to auto document is in the PYTHONPATH.
+
+   4. Generate document by Makefile
+#+BEGIN_SRC sh
+    make html
+#+END_SRC
+    will generate html output.
+
+* Cookbook
+
+* Org Configuration
+#+STARTUP: hidestars

@@ -1,0 +1,297 @@
+* git tutorial 
+** Working with a repository
+*** git clone							      :clone:
+    "git clone" command is used to create a local copy of a remote
+    repository. 
+*** git pull							    :pull:
+    "git pull" command fetches change from a remote branch and merges
+    them into the current branch.
+*** bare reposity
+    git is a distributed version control system, and bare reposity is
+    a method to make git work like CVS and SVN. Bare repository
+    contains only the contents of the ".git" directory of your private
+    repository without any file checked out around it. Bare repository
+    will track the change of your repository, user could push to and
+    pull from it just like working with CVS and SVN.
+
+** What happens when rebase conflict happens		   :rebase:mergetool:
+*** Introduction
+   /git-rebase/ will first format your commits into a patch, change your the
+   HEAD of local repo to be the fetched HEAD, and then it will apply the patch
+   of your commits. Conflict may happen here. 
+
+   When rebase conflict happens, just like the merge conflict, the index file
+   will record up to three versions: 
+   - stage 1 stores the version from the common ancestor
+   - stage 2 stores the version from the origin
+   - stage 3 stores the version from the remote
+    
+   For example, if we have a rebase command to be:
+#+BEGIN_SRC sh
+    git fetch
+    git rebase origin
+#+END_SRC
+   Then 
+   + :1 will be the common ancestor, in other words, it is the commit your
+     commits based on. 
+   + :2 will be the fetched HEAD, the origin, and 
+   + :3 will be the HEAD or your commit. 
+   Do not be confused here, you are not the origin. 
+
+*** View Conflicts
+    You can view conflicts with git-diff git-show or ediff.
+
+*** Resolve Conflicts by merging
+    You could resolve conflicts by merging. Merging could be done via manually
+    edit, but sometimes git-mergetool is a good method to resolve conflict. When
+    use emerge as the merge tool, please remember that once the emerge quits,
+    then the merge is done, git will consider you have solved the conflict. The
+    origin file with conflict message on will be stored as file.orgi. Merging is
+    working on :2 and :3, it will merge remote commit to the origin commit.
+
+*** After resolving
+    If conflict is resolved, use git-rebase --continue to go on, else use
+    git-rebase --abort to abort the rebase process.
+
+
+   
+
+     
+    
+* Git Command
+*** git show							       :show:
+    /git show/ command shows the most recent commit on the current branch.
+
+*** git diff							       :diff:
+#+BEGIN_SRC sh
+    git-diff --cached
+#+END_SRC
+    will shows the difference between HEAD and the index file -- this is what
+    you are going to commit if you run git-commit right now.
+    
+#+BEGIN_SRC sh
+    git-diff
+#+END_SRC
+    will show the difference between the index file and current working tree --
+    this is what you have done but have not added to git with git-add
+    command. git-commit will not commit there difference to the repository.
+
+*** git push							       :push:
+***** git push url master:master
+      + in /git push/ command, this first part of branches specifies the
+        remote branch and second part of the pattern specifies the local branch.
+***** git push url release
+      + if there is only one branch is specified, then it should be the remote
+        branch.
+
+*** git branch							     :branch:
+    "git branch" will create a branch based on current branch.
+    
+*** git rebase							     :rebase:
+    After /git-fetch/, origin/master will be fetched into you local repo. A
+    /git-rebase/ command is required for each branch to be rebase to
+    origin/master
+#+BEGIN_SRC sh
+    git-rebase origin/master
+#+END_SRC
+            
+*** git reset							      :reset:
+    git-reset has three modes "mixed", "soft" and "hard". 
+    + mixed
+      Resets the index but not the working tree. It means all things you add to
+      the index via git-add command will be lost, but the working tree is
+      untouched. You can add them to the index again via git-add. This mode is
+      useful when you decide to change what you've added to the index.
+    + soft
+      change the head to be a specific committing, but does not change any thing
+      in the index and working tree.
+    + hard
+      change the head to be a specific committing, change index and working tree
+      to match this change. *use carefully*, it is damaged.
+
+*** git format-patch						:formatPatch:
+    Format patches based on the origin branch.
+#+BEGIN_SRC 
+    git format-patch -o /path/to/patch/dir origin
+#+END_SRC
+        
+*** TODO git config						     :config:
+    
+*** git stash							      :stash:
+    /git-stash/ saves your local modifications away and reverts the working directory to
+    match the HEAD commit.
+
+    *stash* menas "save up for future use". Git provides this commands for
+    programmer to record the current state of the working dicretory and
+    index. After stashing, repository will enter to a clean working directory
+    and allow programmer to check into different branch or state.
+
+    /git-stash/ provides following subcommands:
+    - save :: Save local modification to a new stash
+    - list :: List the stashes 
+    - show :: Show the description of the stash
+    - apply :: Restore the changed recroded in the stash on top of the current
+               working tree
+    - clear :: Remove all stashed states
+
+**** show
+     /git stash show/ accept an index to specify the stash to show. By default
+     the command shows the diffstate which will not display all the changed
+     contents, but it will accept any format knonwn to git-diff. For example,
+     with following command, you can view the most recent stash in patch form:
+#+BEGIN_SRC sh
+    git-stash show -p stash@{1}
+#+END_SRC
+
+     
+**** Version changes
+     Start from Version 1.5.5.6, /git-stash/ added few sub-command to manipulate
+     stashed states. like *drop*, *pop*. Before 1.5.5.6, there is no way to
+     delete a single stash, you need to use clear command to clear all the
+     stashed states.
+* Configuration
+** Configure Apache2
+   + Enable /mod\_dav/, /mod\_dav/ extension to the HTTP protocol
+     allows creating, moving, copying, and deleting resource and
+     collections on a remote web server. 
+      1. Use the following command to enable mod\_dav on Ubuntu:
+#+BEGIN_SRC sh
+	 a2enmod dav
+	 a2enmod dav_fs
+#+END_SRC
+	 + Make a bare clone of your private reposity
+#+BEGIN_SRC sh
+git clone --bare {path-to-private-repo} {project}.git
+#+END_SRC
+        The bare reposity should be created inside your apache DocumentRoot.
+	+ inform git that his repository is meant to be 
+	  
+	  
+* CookBook 
+** How do I discard changes.   
+*** Discard changes made that have not been added to index.	   :checkout:
+    There is no command specific for this, what you can do is checkout a old
+    version of file to replace the changed one. 
+#+BEGIN_SRC sh
+git checkout /path/to/file/to/revert
+#+END_SRC
+
+*** Discard changes made that have been added to index.	     :reset:checkout:
+    Use /git-reset/ to revert index. 
+#+BEGIN_SRC sh
+    git reset HEAD path/to/file
+#+END_SRC
+    and Then use /git-checkout/ to replace the changed one.
+#+BEGIN_SRC sh
+    git-checkout HEAD path/to/file
+#+END_SRC
+
+** How to solve merge conflict					       :diff:
+   When merge conflicts happens, then following things happen:
+   + unconflicted files will be added into index and conflicted files will be
+     left out of the index.
+   + git diff does not show changes that are staged in the index.
+
+   What you are going to do are:
+   1. using /git-diff/ to show changes in the conflicted files. 
+   2. Then edit the conflicted file to what to want
+   3. /git-add/ file
+   4. git-commit changes and solved the merge.
+
+** How to show a specific version of file under git	      :show:revParse:
+   /git-show/ command is used for this.
+#+BEGIN_SRC sh
+    git-show object
+#+END_SRC
+    The format of object is "revision:path", revision is the name of
+    committing, please refer to /git-rev-parse/ for format of this part. Here is
+    an example:
+#+BEGIN_SRC sh
+    git-show d54719fd:comms/cplib_service_list.h
+    git-show comms-1.4:comms/cplib_service_list.h
+#+END_SRC
+   
+** How to combine the changes of several commit into one commit?      :merge:
+   In the development, phenics likes to commit each time there is changes in the
+   code. But when format patch to the group, it is better to combine all the
+   small changes in several commit into one commit. How could we do that?
+
+   The answer is the /--squash/ option of git-merge command. squash option will
+   make git-merge command produce the working tree and index state as if a real
+   merge, but do not actually make a commit or move the HEAD, nor record
+   $GIT_DIR/MERGE_HEAD to cause the next git commit command to create a merge
+   commit. It is exactly what phenics want.
+    
+** How to add a remote name and fetch branch from it?	       :remote:fetch:
+   If there is a remote git repository has branches that you want to track, then
+   git-remote probably is what you want. git-remote manages a set of 'remote'
+   branches that you can track. 
+
+   Assume the URL of the repository you want to track is URL, then use following
+   commands, you could track and checkout branches from it:
+#+BEGIN_SRC sh
+    git remote add repo-name URL
+    git fetch repo-name
+    git checkout -b branch-name --track repo-name/branch-name
+#+END_SRC
+    
+** How to view conflict after merging?				       :show:
+   when merge conflict happens, the index file records up to three versions;
+   stage1 stores the version from the common ancestor, stage2 from HEAD and
+   stage3 from the remote branch (you can inspect the stages with git-ls-files
+   -u). 
+
+   stage files could be showed with following commands:
+#+BEGIN_SRC sh
+    git-show :1:path/to/file
+    git-show :2:path/to/file
+#+END_SRC
+    
+    You can also ediff them with :1 and :2 or :3 as the revision number.
+
+** How to Make a public repository?
+   1. Create the bare repository
+#+BEGIN_SRC sh
+      $ git clone --bare /path/to/private/repo platypus.git
+#+END_SRC
+
+   2. make it daemon export ok
+#+BEGIN_SRC sh
+      $ touch platypus.git/git-daemon-export-ok
+#+END_SRC
+
+   3. make post-udpate executable
+#+BEGIN_SRC sh
+      $ chmod a+x platypus.git/hooks/post-update
+#+END_SRC
+      
+   4. update service info
+#+BEGIN_SRC sh
+      $ cd platypus.git
+      $ git --bare update-server-info
+#+END_SRC
+            
+** How to delete a single stash repo				      :stash:
+   There is on way before version 1.5.5.6. If you are using git above 1.5.5.6,
+   read the manual of git-stash, you will get it.
+   
+** How to pack git repo into a tar.gz file			    :archive:
+   Use git-archive with "--format=tar" options:
+#+BEGIN_SRC sh
+    git archive --format=tar --prefx=emacs/ HEAD | gzip > emacs.tar.gz
+#+END_SRC
+    /--prefix/ option will add prefix to each entry in the tar file. If the
+    argument end with "/", then a top directory will be created. git archive
+    command will write output contents to stdout. We use pipeline and gzip to
+    make it to be a tar.gz file here.
+      
+** How to delete a file form a commit				  :rebase:rm:
+   Use interactive rebase, set the commit you want to edit with "edit". When
+   rebase stops there, just delete the file with "git rm $filename" and "git
+   commit --amend". 
+
+   Remember to use "git-rm", this command will inform git the deletion of the
+   file. Normal "rm" command will not do.
+* Org Configuration
+#+STARTUP: hidestars
+#+TAGS: show

@@ -1,0 +1,61 @@
+* Basic
+  
+** Type
+   Such dynamic languages trade off some type safety and performance for the
+   sake of flexibility, because static typing is an important source of
+   optimization.          --- "Modern C++ Design"
+
+* Boost
+** Lambda    
+*** How lambda expression "1 + _1" works?
+    You need to declare "using namespace boost::labmda" to make this expression
+    work. The trick could be a 
+
+** Bind
+**** Why bind, problem of mem_fun
+
+**** Return type
+     The return type of bind is unspecified, it is not possible to store the
+     result of bind, you can use bind together with boost::function to achieve
+     this.
+
+** Smart Ptr     
+**** shared_ptr
+     pointer to type could not be converted to shared_ptr<type> implicitly,
+     because shared_ptr declared its single parameter constructor to be
+     "explicit". 
+     
+** Iterator    
+*** TODO Iterator Adaptor 
+    SCHEDULED: <2009-02-17 Tue>
+
+** Boost.Program_options
+   The program_options library allows program developers to obtain program
+   options, that is (name, value) pairs from the user, via conventional methods
+   such as command line and config file.
+
+   This is a library require an .so or .a library file.
+
+* cookbook
+** How to organize function template full specification code. :Template:Linker:
+   Function template specification is actually a normal declaration rather than
+   a template. Therefore, there should only one definition of the specification
+   at link time. On other hand, the declaration should be seen by the compiler
+   to prevent automatic instantiation from template.
+
+   So the best practice is putting the template specification along with
+   template definition inside the header file and then define the specification
+   in object file.    
+
+** How to report error in a constructor
+   The only way to report error in constructor is throwing an exception. 
+
+** How to implement a base64 encoder and decoder iterator
+   Actually, there is no method to implement a right base64 encoder and decoder
+   iterator adaptor. Because base64 encode and decode method need to verify
+   whether it has reach the end of the input. 
+
+* Org Config
+#+STARTUP: hidestars
+#+STARTUP: content
+#+TAGS: Template(t) Object-Oriented(o) Linker(l) Compiler(c)  

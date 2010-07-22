@@ -1,0 +1,339 @@
+#+STARTUP: hidestars
+
+* Javascript  
+** Basic Language Feature   
+*** String Concatenation 
+    String concatenation will always lead to a new object, for example:
+#+BEGIN_SRC js2
+    var item = "test";
+    var itemRef = item;
+    item += "ing";
+    alert( item != itemRef);
+#+END_SRC
+    alert function will alert "true" because concatenation operator will
+    generate a new object that is different from previous one.
+    
+*** Function Overloading
+    Javascript does not support overloading natively, but we have method to
+    archive it with some javascript features. 
+**** arguments
+     Inside of every function in javascript there exists a contextual variable
+     named /arguments/ that acts as a pseudo-array containing all the arguments
+     passed into the function. 
+**** Type
+     /typeof/ operator will return the string name of the type of variable. But
+     for array or a custom object, it only returns "object" which makes it to be
+     not quiet useful. 
+
+     The second way of checking the type of an object is by referencing a
+     property of all Javascript objects called constructor. 
+     
+*** Scope
+    + In JavaScript, scope is kept within functions, but not within blocks.
+    + In browser-based JavaScript, globally scoped variables are actually just
+      properties of the /window/ object.
+    + When a variable is not defined explicitly(use /var/), then it will be defined
+      globally, event though it is only used within the context of the function
+      scope. For example:
+#+BEGIN_SRC js2
+      function undefined_variable_test()
+      {
+	  foo = "test";
+      }
+
+      undefined_variable_test();
+      
+      alert(window.foo == "test");	//will be true
+#+END_SRC
+            
+*** Context
+    Within JavaScript, your code will always have some form on context(an object
+    within which it is operating).    
+*** Classes
+    JavaScript does not support true classes. However, it is possible to define
+    pseudoclasses in Javascript by using /constructor functions/ and /prototype
+    objects/. 
+    
+**** New operator & Constructor
+     The new operator must be followed by a function invocation. It creates a
+     new object, with no properties and then invokes the function, passing the
+     new object as the value of the this keyword. A function designed to be used
+     with the new operator is called a /constructor/. 
+
+**** Prototype
+     You could also assign function to object members as methods. These methods
+     could be invoked with obj.method() within the context of that object. But
+     the problem is that each object will have the same member to be that
+     function.
+
+     JavaScript provide prototype for a solution. When new operator is called,
+     it will set the prototype property of object to be the value of
+     Constructor.prototype, this will make all objects have a property named
+     prototype refers to same Constructor.prototype object. And the tricky part
+     is that all objects will inherit exactly the same set of properties from
+     the prototype.
+
+     Inherited properties behave just like regular properties of an object. They
+     are enumerated by the for/in loop and can be tested with the in
+     operator. You can distinguish them only with the Object.hasOwnProperty() method.
+     
+*** Objects
+    Objects are composite datatypes, an object is an unordered collection of
+    properties, each of which has a name and a value. The named values held by
+    an object may be primitive values, such as numbers and strings, or they may
+    themselves be objects.
+
+**** Object literal
+     An object literal is a comma-separated list of property name/value pairs,
+     enclosed within curly braces. Each property name can be a JavaScript
+     identifier or a string, each property value can be a constant or any
+     JavaScript expression.
+
+     
+**** Object and Associate Arrays
+     You can use . operator to access the properties of an object, it is also
+     possible to use the [] operator to access properties. following syntax is
+     allowed:
+#+BEGIN_SRC js2
+object.property
+object["property"]
+    
+#+END_SRC
+
+*** With 
+    The /with/ statement is used to temporarily modify the scope chain. for
+    example:
+#+BEGIN_SRC js2
+    Rectangle.prototype.area = function(){
+	with(this){
+	    return width*height;
+	}
+    }
+#+END_SRC
+    makes it is possible to not prefix width and height with "this".
+*** Class Properties
+    Class properties in JavaScript is simulated by defining a property of the
+    constructor function itself.
+    
+    
+** Event     
+*** DOM Level 0 Event Model
+    DOM Level 0 Event Model uses a property method for event function
+    management. You assign function to properties of object for event function
+    registration. The prototype of event function is:
+#+BEGIN_SRC js2
+    function ( event ){
+    // event handler
+    }
+#+END_SRC
+    
+    When event function is called, an event object is passed as the first
+    argument. 
+
+**** Event Propagation 
+     Event will be bubbled from children object to parent object. For stop the
+     event propagation, user can call /stopPropagation/ of event instance for
+     standards-compliant browsers, or set the property named /calcelBubble/ to
+     be true in Internet Explorer.
+
+*** DOM Level 2 Event Model
+    DOM Level 2 Event Model solved the only one event function problem by a
+    listener method. 
+    
+**** Add a listener
+#+BEGIN_SRC js2
+     addEventListener ( eventType, listener, useCapture )     
+#+END_SRC
+     
+**** Event Propagation
+     Under the DOM Level 2 Event Model, event is triggered and propagate with
+     two procedure.
+     + *capture phase*, event is propagated from the root of the DOM tree down
+       to the target element.
+     + *bubble phase*, event is propagated from the target up to the root.
+       
+     /useCapture/ parameter in /addEventListener/ function is designed to
+     specify which type of handler is established. 
+     |-------+-----------------|
+     | Value | Handler Type    |
+     |-------+-----------------|
+     | true  | bubbler handler |
+     | false | capture handler |
+     |-------+-----------------|
+          
+*** HTML
+**** Form
+***** checkbox
+      Checkbox with same is considered to be same parameter. There could be
+      multiple checkbox elements with the same name. They will be submitted with
+      same name if user selected them. As an example, for the following checkbox
+      elements:
+#+BEGIN_SRC html
+      <form>
+        <input type="checkbox" name="pets" value="cat" checked="checked"/>
+        <input type="checkbox" name="pets" value="bird" />
+        <input type="checkbox" name="pets" value="fish" />
+      </form>
+#+END_SRC
+      If user choose brid and fish, then the values included in the parameter
+      list sent to the server would be
+
+**** Span
+     The <span> tag simply delimits a portion of content ( constrained by normal
+     tag-nesting rules, of course). Browser treat the <span> tag as another
+     physical or content-based style tag. The default meanning of <span> tag is
+     to leave the text alone.
+     
+
+** DOM   
+*** Whitespace
+    In DOM, white spaces (including end line, tab) is considered to be text
+    node, for example, for the following html snippet:
+#+BEGIN_SRC nxml
+    <html>
+      <head>
+	<title>title</title>
+      </head>
+      <body>
+	body
+      </body>
+    </html>
+#+END_SRC
+    The first child of head is actually a text node with white spaces. 
+
+** Regular Expression
+   Javascript regular expression are strongly based on the regular-expression
+   facilities of Perl. Roughly speaking, you can say that JavaScript 1.2
+   implements Perl 4 regular expression and JavaScript 1.5 implements a large
+   subset of Perl 5 regular expression.
+
+*** Defining Regular Expression
+    There are two methods for defining a regular expression:
+    + With literal syntax
+#+BEGIN_SRC js2
+      var pattern = /s$/;    
+#+END_SRC
+      
+    + With RegExp Constructor
+#+BEGIN_SRC js2
+      var pattern = new RegExp("s$");    
+#+END_SRC
+        
+*** Repetition 
+    |--------+-----------+-------------------------------------------------|
+    | Greedy | Nongreedy | Meanning                                        |
+    |--------+-----------+-------------------------------------------------|
+    | {n, m} | {n, m}?   | match at least n times but no more than m times |
+    | {n,}   | {n,}?     | match at least n times                          |
+    | {n}    | {n}       | match exactly n times                           |
+    | ?      | ??        | match zero or one times                         |
+    | +      | +?        | match one or more times                         |
+    | *      | *?        | match zero or more times                        |
+    |--------+-----------+-------------------------------------------------|
+
+*** Group Only
+    grouping only without being counted to be able to referenced. For example,
+    regular expression
+#+BEGIN_SRC js2
+    /(['"])(:?emc|EMC)\1/
+#+END_SRC
+    will match a emc or EMC within quote, if we do not use group only syntax,
+    then \1 should be replaced by \2.
+
+*** Match Position
+    |--------------------+-----------------------------------------------------------------|
+    | Regular Expression | Meanning                                                        |
+    |--------------------+-----------------------------------------------------------------|
+    | \^                 | beginning of string and, in multiline, the beginning of a line. |
+    | $                  | end of string and, in multiline, the end of a line.             |
+    | \b                 | match a word boundary.                                          |
+    | \B                 | match a posistion that is not word boundary.                    |
+    | (?=p)              | positive lookahead assertion.                                   |
+    | (?!p)              | negative lookahead assertion.                                   |
+    |--------------------+-----------------------------------------------------------------|
+
+*** Flags
+    Regular-expression flags specify high-level pattern-matching rules, unlike
+    the reset of regular-expression syntax, flags are specified outside the /
+    characters. 
+    
+    |-----------+----------------------------|
+    | Character | Meaning                    |
+    |-----------+----------------------------|
+    | i         | case-insensitive matching. |
+    | g         | global matching.           |
+    | m         | multiline mode.            |
+    |-----------+----------------------------|
+
+* jQuery
+** Selector
+*** Syntax
+   To collect a group of elements, use the simple syntax
+#+BEGIN_SRC js2
+$(selector)
+#+END_SRC
+   or
+#+BEGIN_SRC js2
+jQuery(selector)
+#+END_SRC
+
+   To select multiple child of a tag, just use:
+#+BEGIN_SRC js2
+$(parent child1 child2)
+#+END_SRC
+
+*** sibling
+    /~/ is the sibling selector, its prototype is:
+#+BEGIN_SRC 
+    prev ~ siblings
+#+END_SRC
+    sibling operator matches all sibling elements after the "prev" element that
+    match the filtering "siblings" selector. When this selector is used within
+    context, then prev could be omitted and context itself is considered to the
+    prev element.
+    
+
+
+** Travelling   
+*** parents
+    object.parents(expr) returns a set of elements that are the ancestors of
+    elements in object. /expr/ is used for filtering this set of elements.
+    
+    For example:
+#+BEGIN_SRC js2
+    $("span").parents("p");
+#+END_SRC
+    first find all parent elements of span element and filter them with only
+    paragraph.
+
+
+** Event    
+*** Use /bind/ command to register event
+#+BEGIN_SRC js2
+    bind(eventType, data, listener
+#+END_SRC
+*** Namespace
+    Event name could be added with a suffix to be the namespace. Event function
+    could be organized as group to be unbinded or taken other operations.
+*** Event Types    
+**** change
+     The change event fires when a control loses the input focusf and its value
+     has been modified since gaining focus.
+     
+     
+
+** CookBook   
+*** How to do action when document is fully parsed
+    If you want to make some action when document is fully parsed. use the code:
+#+BEGIN_SRC js2
+$(document).ready(function(){
+    $("table tr:nth-child(even)").addClass("even");
+});
+#+END_SRC    
+    Or its shorthand version
+#+BEGIN_SRC js2
+$(function() {
+    $("table tr:nth-child(even)").addClass("even");
+});
+#+END_SRC
+

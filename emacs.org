@@ -1,0 +1,203 @@
+* Emacs Notes
+** Emacs Configuratoin
+*** htmlize in emacs23
+    Emacs 22 and Emacs 23 have a imcompatible feature that in Emacs 23.X, the
+    setting is:
+#+BEGIN_SRC emacs-lisp
+(face-attribute 'default :inherit) => nil
+#+END_SRC
+    While in Emacs 22.X, the setting is:
+#+BEGIN_SRC emacs-lisp
+(face-attribute 'default :inherit) => unspecified
+#+END_SRC
+    If you want htmlize work well in Emacs 23, htmlize.el need to be patched,
+    change the line:
+#+BEGIN_SRC emacs-lisp
+for f = face then (face-attribute f :inherit)
+#+END_SRC
+    to be
+#+BEGIN_SRC emacs-lisp
+for f = face then (or (face-attribute f :inherit) 'unspecified)
+#+END_SRC
+
+*** flymake-mode
+**** flymake-mode in c/c++
+     + Make a Makefile with check-syntax target within it, for example:
+#+BEGIN_SRC makefile       
+.PHONY: check-syntax
+check-syntax:
+	$(CC) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES)
+#+END_SRC
+
+
+** Elisp    
+*** Error Handling    
+    In Elisp, Error is handled in the same way as throw/catch. When error
+    happens, it will be signeled, and elisp will enter a process to search for
+    applicable handler for the error. If any applicable handler is found, then
+    the handler will be called, and control resume following the handler.
+
+**** Signal an Error
+     There are two methods to signal an error.
+     + Function signal error-symbol data
+       Function signal will signal an error with error-symbol and additional
+       data for the error. 
+
+       Here, parameter error-symbol should be an "error symbol" -- a symbol
+       bearing a property `error-condition' whose value is a list of condition
+       name which is actually also error symbols. Elisp uses this method to make
+       error hierarchy. 
+
+       Argument DATA is a list of additional Lisp objects relevant to the
+       circumstances of the error.
+       
+     + Function error format-string &reset args 
+       error is actually an abbrev of Fucntion signal. it the same as:
+#+BEGIN_SRC lisp
+(signal 'error (format format-string rest))    
+#+END_SRC
+       
+
+**** Handle Errors
+     condition-case form is used to handle the error. its syntax is:
+#+BEGIN_SRC lisp
+     condition-case var protected-from handlers...    
+#+END_SRC
+     - VAR is will be binded to the data when signal the error. 
+     - PROTECTED-FORM is the form to be executed
+     - HANDLERS is a list of the form (CONDITIONS BODY...). CONDITIONS could be
+       a signal error condition to a list of error conditions to declare in
+       which error condition the corresponding handling body code will be
+       evaluted. 
+
+*** Symbol
+    Unlike other programming language, Lisp programs are reprented primarily as
+    Lisp objects and only secondarily as text. When Elisp interpert encount a
+    lisp form (func x y z), it will firstly evaluate symbol x, y and z. Replace
+    there arguments with their value and then call the funcation func. That
+    means if you want to pass the symbol x itself to function func, then you
+    need to quote argument with "'", like (func 'x 'y 'z).
+
+*** Special Symbols
+    + *'* : quote the list to disable the evaluation of elements
+    + *`* : same as "quote", but allow using "," and "@," to evalue
+      specific elements.
+    + *,* : Used in "backquote" list to allow evaluating individul elements
+    + *@,* : Evaluate list and splice an evaluated resulting list into current
+      list.
+ 
+*** Font Lock
+    There are several variables that contorl how Font Lock mode hightlights
+    text. But major modes should not set any of these variables
+    directly. Instead, they should set `font-lock-defaults' as a buffer local
+    variables.
+
+    *font-lock-defaults* should be look like this:
+#+BEGIN_SRC lisp
+    (KEYWORDS [KEYWORDS-ONLY [CASE-FOLD 
+     [SYNTAX-ALIST [SYNTAX-BEGIN OTHER-VARS...]]]])
+#+END_SRC
+    
+     Here, the most important thing is the first element KEYWORDS which
+     specifies which these keywords are and how they should be hightlighted. 
+
+**** KEYWORDS
+     The KEYWORDS element of *font-lock-defaults* specify the search criteria
+     for search-based fontification. Actually, by setting the KEYWORDS element
+     of *font-lock-defaults*, you will set the value of *font-lock-keywords*
+     variables. 
+
+     KEYWORDS is a *list* of the keywords to hightlight and each element of it
+     should have one of following foms:
+     - REGEXP :: Hightlight all the matches of REGEXP using
+                 `font-lock-keyword-face'
+
+     - FUNCTION :: Find text by calling FUNCTION and hight it by using
+                   `font-lock-keyword-face' \
+		   
+     - (MATCHER . SUBEXP) :: Here, MATCHER could be a regexp or a function to
+          find the match. SUBEXP is an index to specify which group of MATCHER
+          should be highlighted.
+	  
+     - (MATCHER . FACESPEC) :: FACESPEC specifies the face to hightlight the
+          match. Here, 
+	  
+     - (MATCHER . SUBEXP-HIGHLIGHTER) :: Here, MACHER is just the same, and
+          complex thing is SUBEXP-HIGHLIGHTER. In this kind of specification, we
+          decide to hightlight different part of the sub-matches with different
+          faces. 
+	  
+	  SUBEXP-HIGHLIGHTER is a list which has following fomat:
+	  (SUBEXP FACESPEC [OVERRIDE [LEXMATCH]])
+	  SUBEXP is a index to specify which sub expression is going to be
+          highlighted and FACESPEC specify the highlight face.
+
+
+	  
+
+*** How to use MuMaMo   
+**** define-mumamo-multi-major-mode
+     The final step of using MuMaMo is function define-mumamo-multi-major-mode,
+     it will create a major mode function according the following parameters:
+     - fun-sym :: name of the major mode function
+     - spec-doc :: documentation
+     - chunks :: Is a list where each entry have the format to be 
+		 (CHUNK-DEF-NAME MAIN-MAJOR SUBMODE-CHUNK-FUNCTIONS)
+		 
+		 CHUNK-DEF is the key name by which the entry is recognized which
+                 is a string.
+		
+		 MAIN-MAJOR is the major mode used when there is no chunks.
+		 
+		 SUB-CHUNK-FUNCTIONS is a list of the function that does the
+                 chunk division fo the buffer.
+
+     The key point here is defining the chunk division functions.
+
+     There are some helper functions in MuMaMo library will help you with it.
+
+**** Chunk division functions
+     chunk division function accept three parameters.
+#+BEGIN_SRC emacs-lisp
+    (defun chunk-division-func (pos min max)
+      ......)
+#+END_SRC     
+     - pos :: The point at where to determine mode type
+     - min & max :: (MIN MAX) the search around POS must be within (MIN MAX)
+
+     chunk division function search any possible chunk around pos within MIN and
+     MAX and return a list (START END EXCEPTION-MODE BORDERS PARSEABLE-BY) which
+     has following meanning:
+     - START & END :: the start and end of the chunk. START and END have the
+                      tranditional (START END] semantic. START should be right
+                      at the beginning of the chunk but END should be the next
+                      position of the end of the chunk.
+     - EXCEPTION-MODE :: the major mode of the chunk. If it is non-nil, then it
+                         should be sub-mode. Chunk division function returns the
+                         sub-mode when it is identified. Or else return nil to
+                         indicate that it should be fonitified as the main major
+                         mode.
+     - BORDERS ::
+     - PARSEABLE-BY :: 
+	      
+     
+**** mumamo-find-possible-chunk
+     mumamo-find-possible-chunk is a little bit complex, it accept helper
+     funcitons and do the chunk division according to them:
+#+BEGIN_SRC emacs-lisp
+(defun mumamo-find-possible-chunk (pos
+				   min max
+				   bw-exc-start-fun
+				   bw-exc-end-fun
+				   fw-exc-start-fun
+				   fw-exc-end-fun
+				   &optional find-borders-fun)
+#+END_SRC
+     pos, min and max are just the parameters in chunk division functions. the
+     important thing here is 			  
+      			         
+
+
+* Org Configuration
+#+STARTUP: hidestars
+#+STARTUP: content

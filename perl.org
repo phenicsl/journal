@@ -1,0 +1,427 @@
+* Perl 6
+** Operators   
+*** ( ), [ ], and { }
+    - Array Composer [ ] ::
+      It provides "semilist" context, which is a semicolon-separated list of
+      statements, each of which is interpreted in list context and then
+      *concatenated into the final list*.
+    - Hash composer { } ::
+      Inside must be either empty, or a single list starting with a pari or a
+      hash, otherwise you must use hash( ) or %( ) instead;
+#+BEGIN_SRC cperl
+# following three statements did the same thing.
+my %hash = {
+    "a" = > "b"
+};
+
+my %hash2 = %(
+    "a", "b"
+);
+
+my %hash2 = hash(
+    "a", "b"
+);
+#+END_SRC
+      
+    - Capture composer ( ) ::
+      Capture composer does not associate to any type, it just represent an
+      argument list that doesn't yet know its context. A usage of it is
+      associating all its elements together.
+
+** Regexes and Rules   
+*** New metacharacters    
+**** ~ 
+     The ~ operator is a helper for matching nested subrules with a specific
+     terminator as the goal.
+
+     /'(' ~ ')' <expression>/ is nearly the same as /'(' <expression> ')'/ . But
+     the difference is that /'(' ~ ')' <expression>/ will associate <expression>
+     with left and right atoms. It will setup the inner expression to recognize
+     the terminator, and to produce an appropriate error message if the inner
+     expression does not terminate on the required closing atom.
+**** TODO ~~ and !~~
+     
+     
+*** Variable (non-)interpolation
+    - Variable ::
+      Variable is converted to be a string unless it is a Regex object. If the
+      variable is a Regex object, then it is called as a subrule, as if it has
+      been written as <$var>
+    - Array ::
+      An array is matched as junctive 
+      
+*** Difference between Rule and Token
+    Rule implies the :sigspace modifier, which means each blank space in the
+    rule definition will be replaced by <.ws>.
+
+*** Extensible metasyntax (<...>)
+    - First character is whitespace ::
+      
+* Parrot  
+** Interpreter
+   Parrot has four basic types of registers:
+   - PMC ::
+     Short for Parrot Magic Cookies, are the structure that represent high-level
+     variables such as arrays, hashes, scalars, and objects.
+   - string ::
+   - integer ::
+   - float-point ::
+
+   One for each of the core data types in Parro
+
+   Parrot has seven separate stacks, each with a specific purpose. 
+   - Register Stack (4) ::     
+     Four register sets each have their own stack for quick register contents.
+   - Backing Stack ::     
+     The engine pushes and pops entire register sets in one operation
+   - Individul Integer Stack ::
+     dedicated to saving and restoring individual integers, which the regular
+     expression ssytem uses heavily.
+   - Control Stack ::
+     keeps track of control information
+
+** PIR
+   Parrot Intermediate Representation (PIR) is Parrot's native low-level
+   language. PIR is commonly used to write Parrot libraries -- including some of
+   the Parrot's compilers -- and is the target form when compiling high-level
+   language to Parrot.
+
+*** Different lanaguages in parrot
+    | name | extension | description                        |
+    |------+-----------+------------------------------------|
+    | PIR  | .pir      | Parrot Intermediate Representation |
+    | PASM | .pasm     | Parrot Assembly Language           |
+    | PBC  | .pbc      | Compiled Parrot Bytecode           |
+
+*** PIR features
+    - Treate newline to be statement delimiter
+    - Comments are makred by #
+    - Include some high-level construts for readability
+    - Does not and will not have high-level looping structure like while or loop
+    - User defined macro facility to create user-defined directives
+
+*** Parrot Registers
+    The only place to store values is in a Parrot register. Register names is
+    PIR always start with a dollar sign, followed by a single character shows
+    whether it is an integer(I), numeric(N), string(S), or PMC(P) register.
+
+*** String: Encodings and Charsets
+    Every string is associated with an encoding and a character set (charset). 
+
+    Double-quoted string constants can have an optional prefix specifying the
+    charset or both the encoding and charset of the string.
+
+*** Register Allocator
+    Parrot has the ability of register allocation. When compile PIR source file,
+    register allocation will be performed for better optimization.
+
+*** Namespace
+**** Intro
+     Namespaces are arranged into a large n-ary tree. There is the root namespace
+     at the top of the tree, and in the root namespace are various special HLL
+     namespaces. Each HLL compiler gets its own HLL namespace where it can store
+     its data during compilation and runtime.
+     
+     Each namemspace get's its own are for function names and *global
+     variables*.
+
+     
+**** Related Opcode
+     - get_root_namespace ::
+       get root namespace
+     - get_namespace ::
+       get current namespace or get a specific namespace
+**** Namespace and Class
+*** Class
+**** Create and instantiate class
+     - create class ::
+       use *newclass* opcode.
+     - instantiate class ::
+       use *new* opcode.       
+#+BEGIN_SRC pir
+    .sub main :main
+        $P0 = newclass 'Rectangle'	
+	.local pmc spot
+	spot = new 'Rectangle'
+    .end
+#+END_SRC
+**** Methods 
+***** Namespace and Methods
+     Methods is defined as a subroutine with *:method* modifier. *:method*
+     modifier will add the subroutine to the class object associated with the
+     currently selected namespace.
+
+     The actual steps to create class methods is as following:
+     1. Methods will be defined within a specific namespace with *:method*
+        modifier. 
+     2. A class associated with given namespace will be created with *newclass*
+        opcode. 
+     3. Objects could be created to the class and methods could accessed through
+        objects. 
+
+     Please note that opcode *newclass* could create class by supplying a key,
+     namespace or string PMC. We could give a key specifying an nested namespace
+     to create a class, for example:
+#+BEGIN_SRC pir
+.namespace ["orgmode"; "Head"]
+
+.sub print :method
+	print "orgmode::Head"
+.end
+
+.namespace[]
+.sub main :main
+	'create_class_with_key'( )    # also could be "'create_class_with_namespace'( )"
+	$P1 = new ["orgmode"; "Head"] # also could be "$P1 = new $P0"
+	$P1.'print'( )
+.end
+
+.sub create_class_with_key
+	$P0 = newclass ["orgmode"; "Head"]
+.end
+
+.sub create_class_with_namespace
+	$P0 = get_namespace ["orgmode"; "Head"]
+	$P1 = newclass $P0
+.end
+#+END_SRC
+    
+     Name of method need to be quoted when invoked, if the name of the method is
+     not contained in quotes, it's treated as a named variable that does.
+#+BEGIN_SRC pir
+    .local string methodname = "Foo""
+    object.methodname( ) #same as object.'Foo'( )
+#+END_SRC
+    
+***** self
+      Inside the method, the invocant object can be accessed using the self
+      keyword. you can also use the *:invocant* flag to defien a new name for
+      the invocant object.
+      
+**** PMCs and Classes
+     PMCs aren't exactly "classes" in the way that this term is normally
+     used. They are polymorphic data items that can be one of a large variety of
+     predefined types. 
+
+**** Class and Object PMCs
+     The detail about various PMC classes are managed by the Class PMC. Class
+     PMCs contain information about the class, available methods, the
+     inheritance hierachy of the class, and various other details. 
+*** Subroutines
+    Subs are created by IMCC(the PIR compiler) via the .sub directive. It
+    contains following pragmas:
+    - :main ::
+      Indicating the subroutine execution starts
+
+    - :anon ::
+      
+    - :load ::
+      If a subroutine is marked as :load, then it will be executed before the
+      *load_bytecode* opcode returns.
+**** Tail Call
+     In PIR code, we use the *.tailcall* directive to make a tailcall, intead of
+     *.return* directive. You need to explicitly use this directive to enable
+     tailcall optimization.
+     
+*** Continuation
+    Continuation are snapshots, a frozen image of the current execution state of
+    the VM. Once we have a continuation we can invoke it to return to the point
+    where the continuation was first created. It's like a magical timewarp that
+    allows the developer to arbitrarily move control flow back to any previous
+    point in the program.
+
+    I Parrot, almost every control flow manipulation including all subroutine,
+    method, and coroutine calls, are performed using continuation.
+
+    Doing all sorts of flow control using continuations is called Continuation
+    Passing Style(CPS). CPS allows parrot to offer all sorts of neat features,
+    such as tail-calling optimizations and lexical subroutines.
+    
+*** Multiple Dispatch
+    Parrot subroutines and methods could be multiple dispatch which means
+    multiple methds or subroutines within a namespace could have the same name
+    if their signatures are different. Here is an example:
+#+BEGIN_SRC pir
+    .sub 'Add' :multi( Integer, Integer )
+            .param int x
+            .param int y
+            .local int result
+            result = x + y
+            .return (result)
+    .end
+    
+    .sub 'Add' :multi(String, String)
+            .param string x
+            .param string y
+            .local string result
+            result = x . y
+            .return (result)
+    .end
+    
+
+    .sub '' :main
+            $I0 = 'Add'( 2, 3 )
+            say $I0		# print "5"
+            $S0 = 'Add'("good", " and bad")
+            say $S0		# print "good and bad"
+    .end
+#+END_SRC
+
+    the type that could be specified in *:multi* pragma are:
+    - String
+    - Integer
+    - PMC
+    - Number
+    - "TypeName"
+      Could be a type defined by user.
+    - -
+      Could be any type
+     
+    There is something need to be noted in multiple dispath methods. Methods
+    have a implicit parameter called "self" which does not specified in the
+    parameter list. This parameter need to be specified in the *:multi* program
+    or else parrot will report an argument number mismatch error. For example:
+
+#+BEGIN_SRC pir
+    .namespace ["Test"]                                                                                                                                                                
+
+    .sub print :method :multi(_)
+            say "Test"
+    .end
+    
+    .sub print :method :multi(_, String)
+            .param string prefix
+            .local string result
+            result = prefix . " Test"
+            say result
+    .end
+
+    .namespace[]
+    .sub main :main
+            $P0 = newclass "Test"
+            $P0 = new "Test"
+            $P0.'print'( )
+            $P0.'print'( "prefix" )
+    .end
+#+END_SRC
+    
+   To make the decision about which multi variant to call, Parrot takes a
+   Manhattan Distance between the two. 
+*** Opcode    
+**** get_global
+     + get_global could be used to get a subroutine in the current namespace:
+#+BEGIN_SRC pir
+       $P0 = get_global "MySubName"    
+#+END_SRC
+       Or, if you want to find a subroutine form a different namespace, you need
+       to first select the namespace PMC and then pass that to get_global:
+#+BEGIN_SRC pir
+       $P0 = get_namespace "MyNamespace"
+       $P1 = get_global $P0, "MySubName"
+#+END_SRC
+              
+*** VTABLEs
+    PMCs all subscribe to a common interface of functions called VTABLEs. Every
+    PMC implements the same set of these interfaces, which perform very specific
+    low-level tasks on the PMC.
+
+    Like methods on an object, VTABLE interfaces are defined for a specific
+    class of PMC, and can be invoked on any member of that class. Likewise, in a
+    VTABLE interface declaration, the /self/ keyword is used to describe the
+    object that it is invoked upon.
+
+    However, VTABLE methods cannot be invoked directly, they are also not
+    inherited through class hierarchies like how methods are. 
+
+    VTABLE interfaces are the pirmary way that data in the PMC is accessed and
+    modified. VTABLES also provide a way to invoke the PMC if it's a subroutine
+    or subroutine-like PMC. VTABLE interface are not called directly from PIR
+    code, but are instead called internally by Parrot to implement specific
+    opcodes and behaviors.What VTABLE interface overrides do, in essence, is to
+    allow the programmer to change the very way that Parrot accesses PMC data in
+    the most fundamental way, and changes the very way that opcodes act on that
+    data.
+    
+**** Override VATABLE
+     VTABLE interfaces can be written and overwritten in PIR using the :vtable
+     flag on a subroutine declaration. 
+     - *:vtable* flag is used to override an VTABLE interface
+     - *:vtable* flag accept an parameter to specify the name of the overrided
+       interface so the name of subroutine could be different from interface name
+     - VTABLE interfaces are often given the *:method* flag also, so that they
+       can be used directly in PIR code as methods, in additional to beging used
+       by Parrot as VTABLE interfaces.        
+*** Exception    
+**** Throwing Exceptions
+     Many exceptions are used internally in Parrot to indicate error
+     conditions. Opcode may throw exceptions to indicate an error or for other
+     purpose.  
+     
+**** Exception Handlers
+     Exception handlers are labels in PIR code that can be jumped to when an
+     exception is thrown. To list a label as an exception handler, *push_eh*
+     opcode is used. Opcode *pop_eh* is used to pops the handler off the top of
+     the stack.
+     
+*** Role
+    Roles are like classes, but don't stand on their own. They represent
+    collections of methods and VTABLEs that can be added into an existing class. 
+
+*** Coroutine
+    Coroutine are similar to subroutine except that they have an internal notion
+    of state. Coroutines, in additional to performing a normal *.return* to
+    return control flow back to the caller and destroy the lexical envrionment of
+    subtouine, may also perform a *.yield* operaiton. *.yield* returns a value to
+    the caller like *.return* can, but it does not destroy the lexical state of
+    the coroutine. 
+
+    In a coroutine, when we continue from a *.yield*, the entire lexical
+    environment is the same as it was when *.yield* was called. This means that
+    the parameter values don't change, even if we call the coroutine with
+    different arguments later.
+*** Annotations
+    Annotations are created using the *.annotation* keyword. Annotations consist
+    of a key/value pair, where the key is a string vand the value is an integer,
+    a number, or a string. Annotations are stored compactly as constants in the
+    compiled bytecode, PMCs cannot be used.
+** L1 
+   L1 is bettern than PASM/pIR in this case because can specially design it form
+   the ground up with the purpose that it should be easy and fast for the
+   machine to execute.
+
+   In short, L1 allows us to design a language with the power and flexibility of
+   C and the semantics of PIR, which in turn will let use reduce algorithmic
+   complexity at the global lelvel.
+** IMCC and PIRC
+   IMCC and PIRC are two separate parsers for PIR and PASM. Both are written
+   using Lex and Yacc.
+
+   IMCC, the *Intermediate Code Compiler* is the current front-end for Parrot
+   that reads PASM and PIR code. It's a relatively old subsystem, and has proven
+   itself difficult to extend or maintain.
+
+   The plan is changing IMCC to be PIRC which is a better alternative to parse
+   PIR and PASM code. 
+
+   PIRC is divided into three different parsers:
+   1. A parser for "Heredoc" constructs, strings which are embeded directly into
+      the file. 
+   2. A macro parser and text replacer, This is a preprocessor for handling
+      macros and constants.
+   3. A parser for the rest of PIR and PASM.
+
+   Breaking things up like this proves to keep things much more simple, and
+   reduces the number of states and conditionals that a single large parser
+   would require. 
+   
+** PCT
+   Parrot uses and advanced set of parsign tools called Parrot Compiler Tool
+   (PCT). PCT uses a subset of Perl 6 programming lanaguage called Not Quite
+   Perl (NQP) and an implementation of the Perl6 Grammar Engine(PGE) to build
+   compilers for Parrot. 
+* Rakudo
+* Tips
+  
+* Org Configuration
+#+STARTUP: hidestars
+#+TAGS: contents

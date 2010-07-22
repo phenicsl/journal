@@ -1,0 +1,191 @@
+* NQP-RX  
+** Makefile 
+   - Makefile dependency analyze ::
+     all -> $NQP_EXE && $SETTING_PBC
+     
+     $NQP_EXE -> $NQP_PBC
+     
+     $ALL_PBCS = $HLL_PBC $P6REGEX_PBC $NQP_PBC
+     $HLL_PBC = HLL.pbc
+     $P6REGEX_PBC = P6Regex.pbc
+     $NQP_PBC = nqp.pbc
+     $ALL_PBCS -> $REGEX_PBC $STAGE2_PBCS
+     
+     $REGEX_PBC = Regex.pbc
+     $REGEX_PBC -> $REGEX_SOURCES
+     # $REGEX_SOURCES are source file for regex 
+     
+     $STAGE2_PBCS = $STAGE2/$HLL_PBC $STAGE2/$P6REGEX_PBC $STAGE2/$NQP_PBC
+                    $REGEX_PBC
+     
+     $STAGE2/$HLL_PBC -> $STAGE1_PBCS $HLL_SOURCES
+     $STAGE2/$P6REGEX_PBC -> $STAGE1_PBCS $P6REGEX_SOURCES
+     $STAGE2/$NQP_PBCS -> $STAGE1_PBCS $NQP_SOURCES
+
+     $STAGE1_PBCS = $STAGE1/$HLL_PBC $STAGE1/$P6REGEX_PBC $STAGE2/$NQP_PBC
+                    $REGEX_PBC
+	
+  There are three stages to generate the final destination required for
+  NQP-RX. Start from stage0, each stage will build up upon privious stage. There
+  are two libraries, $(REGEX_PBC) and $(HLL_PBC) will be used to help to build
+  each stage files. 
+
+*** How the executable nqp is generated?
+    Executable nqp is just a alias for parrot nqp.pbc command. $NQP_EXE depends
+    on $NQP_PBC. but $NQP_EXE is not generated directly from $NQP_PBC. $NQP_EXE
+    is generated from nqp.c which is a c file that programmed to load parrot and
+    execut nqp.pbc. As nqp.c will be compiled as a native command. It gives the
+    flexibility to execute nqp.pbc in a native way.
+
+*** Three stages of NQP-RX
+    Currently there are three stages of NQP-RX, each stage is built upon
+    previous stage. But it seems currently Parrot uses only the first stage
+    NQP-RX. Please read Parrot Makefile and source code for more detail.
+     
+** Modifier
+   - :init ::
+
+     init modifier tells Parrot to run the subroutine only when it executes the
+     file as a program(and not as a library)
+
+   - :anon ::
+
+     By default, Parrot stores all subroutines in the namespace currently active
+     at the point of their declaration. The :anon modifier tells Parrot not to
+     store the subroutine in the namespace.
+
+   - :load ::
+     
+     The :load modifier tells Parrot to run the subroutine when it loads the
+     current file as a library. 
+
+** P6object
+   *P6object* is intended to add Perl6 -like behaviors to objects in Parrot. It
+   creates and maintains protoobjects, and supplies /.WHAT/ and /.HOW/ methods to
+   objects and protoobjects in Parrot. Protoobjects also have a default /.new/
+   method for creating new instances of a class.
+
+
+* Rakudo
+** Opcode
+   - opcode type ::
+     typedef long Parrot_Opcode_t;
+     typdef Parrot_Opcode opcode_t;
+   - opcode definition ::
+     Opcode was defined as .[ch] file. Most opcode function is defined to be.
+#+BEGIN_SRC c
+  opcode_t *
+  Parrot_OPCODE_NAME(opcode_t *cur_opcode, PARROT_INTERP);
+
+  typedef PARROT_INTERP Parrot_Interp interp
+#+END_SRC
+  opcode function takes pointer to current opcode as parameter and return
+  pointer to next opcode.
+
+  - misc ::
+    + Besides all opcodes defined in Parrot, Rakudo also defines its own
+      opcodes, those opcode was defined in:
+      RAKUDO_HOME/src/ops/
+     
+** Runtime Library
+   Currently, some runtime library was written by Perl6. Which will generated to
+   be 
+** PIR Opcode Reference
+   - .include '<filename'> ::
+
+     The .include directive takes a string argument that contains the name of
+     the PIR file that is included. The contents of the included file are
+     inserted as if they were written at the point where the .include directive
+     occurs.  The include file is searched for in the current directory and in
+     runtime/parrot/include, in that order. The first file of that name to be
+     found is included.  The .include directive's search order is subject to
+     change.
+
+   - .macro <identifier> [<parameter>] ::
+
+     The .macro directive starts the a macro definition named by the specified
+     identifier. The optional parameter list is a comma-separated list of
+     identifiers, enclosed in parentheses. See .endm for ending the macro
+     definition.
+
+   - .macro_const <identifier> (<iteral>|<reg>) ::
+
+     The .macro_const directive is a special type of macro; it allows the user
+     to use a symbolic name for a constant value. Like .macro, the substitution
+     occurs at compile time. It takes two arguments (not comma separated), the
+     first is an identifier, the second a constant value or a register.
+
+* Synopsis Explanation
+*** Bits and Pieces
+      + /my Dog $spot/ by itself does not automatically call a /Dog/
+        constructor. It merely assigns an undefined /Dog/ prototype object to
+        /$spot/.
+
+	As deatail, when /my Dog $spot/ is compiled, an 'P6Scalar' instance will
+        be created and then an instance of type 'ContainerDeclarand'will be
+        created and this 'P6Scalar' instance will be passed in as constructor
+        parameter for 'ContainerDeclarand'. 'ContainerDeclarand' is a class that
+        gets created and passed to a trait_mod to describe a declaration of a
+        container. the 'P6Scalar' instance will be stored as a member of the
+        'ContainerDeclarand' instance.
+
+*** Types and Object
+**** The /Mu/ type
+     In Perl6, /Mu/ stands in for Perl 5's concept of "undef" when that is used
+     as noun. However, /Mu/ is also the "nothing" from which everything else is
+     derived via the undefined objects, so it stands in for the concept of
+     "Object" as used in languages like Java.
+
+     
+**** Undefined types
+     Whenever you declare any kind of type, class, module or package, you're
+     automatically declaring a undefined prototype value with the same name,
+     known as the /type object/.
+     
+**** Value types
+     Explicit types are optional. Perl variables have two associated types:
+     + value type ::
+       Value type is stored as its /of/ property. It specifies what kinds of
+       values may be stored in the variable. A value type is given as a prefix
+       or with the /of/ keyword.
+     + implementation type ::
+       implementation type of the container is just the object type of the
+       container itself.       
+       
+     In subroutine, /of/ property is the same as /return/ value in other
+     languages. Subroutines have a variant of the /of/ property, the /as/
+     property. /as/ property could be considered as the implicit type signature
+     of the return statement, it is therefore available for type inferencing
+     within the routine but not outside it.
+
+**** The Cool class
+     The /Cool/ type is derived from Any, and contains all the methods that are
+     "cool". 
+     
+**** Sigils
+     Perl6 includes a system of sigil to mark the fundamental structural type of
+     a varaible:
+     | *Sigil* | Comments                                               |
+     |---------+--------------------------------------------------------|
+     | \$      | scalar (object)                                        |
+     | @       | ordered aray [Role: Positional]                        |
+     | %       | unordered hash (associative array) [Role: Associative] |
+     | &       | code/rule/token/regex [Role: Callable]                 |
+     | ::      | package/module/class/role/subset/enum/type/grammar     |
+
+     - Sigils indicate overall interfae, not the exact type of the bound object.
+
+     - $x may be bound to any object, including any object that can be bound to
+       any other sigil. Such a scalar variable is always treated as a sigular
+       item in any kind of list context, regardless of whether the object is
+       essentially composite or unitary.
+
+**** Parcel
+     A list of one or more comma-separated objects may be grouped together by
+     parentheses into a "parenthesis cell", or "Parcel". Parcel is raw syntactic
+     list that has not yet committed to flattening; no interpolation is made of
+     the list inside without knowing what context it will be evaluated in.
+
+* Org Configuration
+#+STARTUP: hidestars
+#+TAGS: contents

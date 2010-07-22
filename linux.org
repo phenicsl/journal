@@ -1,0 +1,476 @@
+* System Usage
+** Ctrl-q make you input key sequence into Emacs
+** Get UUID of hark disks
+   1. ls -l /dev/disk/by-uuid
+   2. blkid /dev/sda1
+
+** Shutdown system beep module
+   + "modeprobe -r pcspkr" remove the pcspkr module temporaryly to shutdown system beep
+   + edit /etc/modprobe.d/blacklist, add "blacklist pcspkr" into this file
+
+** Install new truetype font
+    + copy font to /usr/share/fonts/truetype/fontdir
+    + chmod to make font to be accessable
+    + execute commands below:
+#+BEGIN_SRC sh
+sudo mkfontscle
+sudo mkdfontdir
+sudo fc-cache -fv
+#+END_SRC
+
+** Setup keys for SSH login
+    + Firstly, run /ssh-keygen/ on host computer to generate the key pair.
+#+BEGIN_SRC sh
+      phenics $ ssh-keygen -f ~/.ssh/walle_rsa -t rsa
+#+END_SRC
+    + /ssh-keygen/ will generate a key pair inside .ssh directory: "walle_rsa"
+      and "walle_rsa.pub". public key should be stored in your server machine,
+      private key "walle_rsa" should be maintained by the user for connection.
+
+      So copy "walle_rsa.pub" to your server machine, and append it to
+      /.ssh/authorized_keys/.
+#+BEGIN_SRC sh
+      walle $ cat walle_rsa.pub >> .ssh/authorized_keys
+#+END_SRC
+
+    + use /ssh-agent/ to manage your keys, use /ssh-add/ command to add the key
+      to /ssh-agent/.
+#+BEGIN_SRC sh
+      phenics $ ssh-add .ssh/walle_rsa
+#+END_SRC
+
+    + Everything is done now.
+** Flow Control
+    Sometimes, terminal and /screen/ program may use "C-s" and "C-q" to be keys
+    for flow control. screen will freeze when type "C-s". It should be OK when
+    you use emacs in this kind of environment because emacs will disable flow
+    control when it starts. If it is not the case, then here is a method to
+    disable flow control in /screen/: add following setting in .screenrc.
+#+BEGIN_SRC sh
+    defflow off
+#+END_SRC
+
+    And here is a method for disabling flow control in shell: add following
+    setting in /bashrc/
+#+BEGIN_SRC sh
+    stty -ixon
+#+END_SRC
+
+** Parse dependency on Debian/GNU Linux
+    Use apt-rdepends to get dependencies. Use bash utilities to filter
+    reduplicate informations:
+#+BEGIN_SRC sh
+    apt-rdepends  libavahi-client-dev libxml++2.6-dev | grep "Depends" | cut -d' ' -f 4 | sort -u
+#+END_SRC
+
+     You also could print the information into a dot file:
+#+BEGIN_SRC sh
+     apt-rdepends 'package' -d > dep.dot
+     dot -Tpng dep.dot -o dep.png
+#+END_SRC
+
+     What a great world in Debian/GNU Linux.
+
+** Tools to manage startup services
+   sysv-rc-conf
+** Wget usage
+*** How mirror a sit with wget?
+#+BEGIN_SRC sh
+    wget --mirror -k URL
+#+END_SRC
+    option -k will convert explicit path to be related path.
+
+*** How to download a directory via HTTP;
+#+BEGIN_SRC sh
+     wget -r -c -np -nc URL
+#+END_SRC
+     /-r/ option will make wget to download file recursively, but this option
+     will also lead wget to download files from up directories. /-np/ will
+     eliminate this.
+
+     /-np/ means no parent, wget will not ever ascend to the parent directory
+     when retrieving recursively.
+
+     /-nc/ means no clobber, When running Wget without -N, -nc, or -r,
+     downloading the same file in the same directory will result in the original
+     copy of file being preserved and the second copy being named file.1.  If
+     that file is downloaded yet again, the third copy will be named file.2, and
+     so on.  When -nc is specified, this behavior is suppressed, and Wget will
+     refuse to download newer copies of file
+
+** Expr
+   /expr/ is a command line expression evaluator. An importance note about expr
+   is taht arguments must be separated by spaces. otherwise it will no be
+   evaluated. For example, command "expr 3+5" will just return "3+5" as result,
+   but "expr 3 + 5" will return 8 as expected.
+** Double Parentheses Construct
+    Similar to the let command, the ((...)) construct premits arithmetic
+    expansion and evaluation. It also allows C-type manipulation of variables in
+    Bash. for example, following command could compute the number of line of all
+    java source files inside current directory and its subdirectories.
+#+BEGIN_SRC sh
+    num=0			# initilize the counter.
+    for file in $(find ./ -name "*.java" -print)
+    do
+	((num += $(wc -l $file | cut -d ' ' -f 1) ))
+    done
+    echo $num			# print result
+#+END_SRC
+    
+** Install-info
+   install-info creates, updates or remove entries in the Info dir file. Before
+   doing any operation, be sure your info file is reside in the same directory
+   as the dir file. Dir file could be specified with the --infodir option, The
+   default value is "/usr/share/info". You just need to specify the info file
+   to install-info command, it will get other informations from the info file.
+
+   Some examples, assume we have a org-mode info file named to be org.
+*** Remove info
+#+BEGIN_SRC 
+     # install-info --remove org
+#+END_SRC
+     
+*** Add info
+    # install-info org
+    
+** Make Emacs support 256 colors in terminal
+#+BEGIN_SRC sh
+    sudo apt-get install ncurses-term
+    export TERM=xterm-256color
+#+END_SRC
+    
+    If you are using screen, you probably need to set the TERM environment
+    variable for each newly opened windows. screen will set them to "screen" by
+    default. 
+#+BEGIN_SRC sh
+    #~/.screenrc
+    term term-256color
+#+END_SRC    
+        
+** Effect /etc/fstab without rebooting
+#+BEGIN_SRC sh
+    mount -av
+#+END_SRC
+    
+    
+* Programming
+** Unix Network Programming
+*** head files
+    | Name         | Description                          |
+    |--------------+--------------------------------------|
+    | netinet/in.h | sockaddr_in and other Internet defns |
+    | sys/sock.h   | basic socket definitions             |
+    | sys/error.h  | error constant definitions           |
+    | arpa/inet.h  | inet_pton,                           |
+
+*** Socket Address Structure
+**** sin_len
+      + IPv4 socket address structure is presented with struct sockaddr_in as
+        below:
+#+BEGIN_SRC c
+struct sockaddr_in {
+  uint8_t         sin_len;      /* length of structure (16) */
+  sa_family_t     sin_family;   /* AF_INET */
+  in_port_t       sin_port;     /* 16-bit TCP or UDP port number */
+                                /* network byte ordered */
+  struct in_addr  sin_addr;     /* 32-bit IPv4 address */
+                                /* network byte ordered */
+  char            sin_zero[8];  /* unused */
+};
+#+END_SRC
+       But actually, the sin\_len field is optional. In my linux implementation,
+       there is no sin\_len field in the definition of /struct sockaddr\_in/,
+        and sin\_family is defined to be u\_int16\_t to occupy 2 bytes, so /struct
+        sockaddr\_in/  structure is still 20 bytes size.
+
+*** buffer size and limitations
+    | item          |  size | description                                           |
+    |---------------+-------+-------------------------------------------------------|
+    | IPv4 datagram | 65535 | 16-bit total length field                             |
+    | IPv6 datagram | 65575 | 16-bit total length field do not include IPvy6 header |
+    | Ethernet MTU  |  1500 |                                                       |
+    | PPP           |       | configurable MTU                                      |
+ 
+
+*** socket options
+     | name       | description |
+     |------------+-------------|
+     | SO\_SNDBUF |             |
+     | SO\_LINGER |             |
+
+*** Functions
+**** connect
+     + If /connect/ fails, the socket is no longer useable and must be closed. We
+       cannot call /connect/ again on the socket. Each time connect fails, we
+       must close the socket descriptor and call socket again.
+**** bind
+     + With IPv4, wildcard address is specified by the constant /INADDR\_ANY/, whose
+       value is normally 0.
+     + IPv6's 128-bit address is stored in a structure which cannot be
+       presented as a constant), we use variable /in6addr\_any/ to solve this
+       problem. The system allocates and initialize the /in6addr\_any/ to the
+       constant IN6ADDR\_ANY\_INIT.
+**** listen
+     + When a socket is created by the socket function, it is assumed to be an
+       active socket, that is, a client socket that will issue a /connect/.
+     + The /listen/ function convert an *unconnected* socket into a passive socket.
+     + The backlog argument to the listen function has historically specified
+       the maximum value for the sum of both queues.
+     + The reason for specifying a large backlog is because the incomplete
+       connection queue can grow as client SYNs arrive, waiting for completion
+       of the tree-way handshake.
+     + If the queues are full when a client SYN arrives, TCP ignores the
+       arriving SYN; it does not send an RST, This is because the condition is
+       considered temporary, and the client TCP will retransmit its SYN,
+       hopefully finding room on the queue in the near future.
+**** exec
+     + Descriptors open in the process before calling exec normally remain open
+       across the exec. This can be disabled using /fcntl/ to set the
+       FD_CLOEXEC descriptor flag. The *inetd* server uses this feature.
+     + exec family
+       |-----------+-------------+-----------------------------------------------------|
+       | character | stand for   | description                                         |
+       |-----------+-------------+-----------------------------------------------------|
+       | *l*       | list        | specify arguments in the parameter list             |
+       | *v*       | argv        | arguments is stored in the argv array               |
+       | *p*       | path        | program is found by PATH variable                   |
+       | *e*       | environment | provide envp array to specify environment variables |
+       |-----------+-------------+-----------------------------------------------------|
+     + Combination order: from "l, v" to "le, ve", to "lp, vp".
+       
+** Pthread
+*** Error Handling
+    1. pthread_mutex_init always return 0, no need to do error handling when
+       calls pthread_mutex_init.
+    2. Following function will return error code if they fail, but no need to
+       do error handling since they rarely fail.
+       + pthread_mutex_destroy
+       + pthread_mutex_lock
+       + pthread_mutex_unlock
+    3. 
+*** Pthread and errno
+
+*** Implementation
+**** Linux Implementation of POSIX Threads
+     Since version 2.3.2, glibc started to use NPTL(Native POSIX Threads
+     Library) as the pthread implementation. 
+     
+     NPTL is a 1:1 implementations, meaning that each thread maps to a kernel
+     scheduling entity. Its implementaiton employ Linux *clone* system call. In
+     NPTL, thread synchronization primitives(mutexes, thread joining, etc.) are
+     implemented using the Linux futex system call.
+*** TODO Socket and Message Queues are thread safe, how?
+    
+** Syslog
+*** syslog.conf
+    syslog.conf is the main configuration file for syslogd which logs messages
+    on *nix systems.
+
+    Every rule in syslog.conf file consists of two fields, a selector field and
+    an action field. Two fields are separated by spaces or tabs
+
+**** Selector
+     The selector field consists of two parts, a facility and a priority,
+     separated by a period(".").
+
+     The facility specify the subsystem that produced the message, could be one
+     of the following:
+     + auth
+     + authpriv
+     + cron
+     + daemon
+     + ftp
+     + kern
+     + lpr
+     + mail
+     + mark
+     + news
+     + security(same as auth)
+     + syslog
+     + user
+     + uucp
+     + local0 through local7
+
+     In most cases anyone can log to any facility, syslog rely on convertion
+     for the correct facility to be chosen.
+
+     The priority specify the severity of the message, it could be one of the
+     following:
+     + debug
+     + info
+     + notice
+     + warning
+     + warn (same as warning)
+     + err
+     + error (same as err)
+     + crit
+     + alert
+     + emerg
+     + panic (same as emerg)
+
+     There is order between priorities. an priority in configuration file
+     actually means the specified priority and all priorities above it.
+
+
+**** Rules
+     Following symbols could be used in selector:
+     |--------+----------------------------------------------------------------------------------|
+     | symbol | description                                                                      |
+     |--------+----------------------------------------------------------------------------------|
+     | "*"    | Stands for all facilities or all priorities                                      |
+     | ","    | Multiple facilities could be associated with on priority, seperate them with "," |
+     | ";"    | Separate multiple selector                                                       |
+     | "="    | Refer to exactly only single priority, do not refer higher priorities            |
+     | "!"    | Ignore this priority and higher priorities                                       |
+     |--------+----------------------------------------------------------------------------------|
+
+     If multiple selector specified for an action, then selectors are processed
+     from left to right, with each selector being able to overwrite the
+     preceding ones.
+
+**** Action
+     Following Actions could be used:
+     |----------------------+----------------------------------------------------------------------------------|
+     | Action               | Description                                                                      |
+     |----------------------+----------------------------------------------------------------------------------|
+     | Regular File         | You may prefix each entry with "-" to void syncing the file for each log message |
+     | Named Pipes          | A fifo or named pipe could be used by prepending a pipe symbol                   |
+     | Terminal and Console | Just specify the tty as file                                                     |
+     | Remote Machine       |                                                                                  |
+     | List of Users        |                                                                                  |
+     | Everyone logged on   |                                                                                  |
+     |----------------------+----------------------------------------------------------------------------------|
+*** syslog and vsyslog
+
+** dup and dup2
+   dup is used of duplicating a file descriptor. There are two functions:
+
+*** dup
+#+BEGIN_SRC c
+    int dup(int OLD);
+#+END_SRC
+    Dup copies the descriptor OLD to the first avaiable descriptor number. As we
+    knonw, file descriptor points to open file structures. So the underlying
+    work of this function is actually dupliate the file descriptor to point to
+    the open file structure pointed by OLD. After the duplication, writting to
+    the returned descriptor is the same as writting to OLD. 
+     
+    
+*** dup2 
+#+BEGIN_SRC c
+    int dup2(int OLD, int NEW);
+#+END_SRC
+    Dup2 duplicate OLD descriptor to NEW descriptor. 
+
+
+*** How to do redirection     
+**** Redirect stdout to file.
+      Here is the situation, we have a complex function that writes information
+      to stdout, now we want these informations to be written in a file. Bash
+      redirection is not work here, because, we just want output from a function
+      call, not the whole program. Here is the code snippet:
+#+BEGIN_SRC c
+    int redirect_call()
+    {
+        int output;
+        int file;
+    
+        /* back stdout descriptor */
+        if((output = dup(1)) < 0 ){
+            perror("dup failed");
+        }
+
+        /* open the file. */
+        if((file=open("filename",O_WRONLY|O_CREAT, 0644)) < 0){
+            perror("open failed");
+        }
+
+        if(dup2(file, 1) < 0){
+            perror("dup2 failed");
+        }
+
+        func();
+
+        if(dup2(1, output) < 0){
+            perror("dup2 failed");
+        }
+
+        close(file);
+    }
+#+END_SRC
+
+** diff and patch   
+*** Applying patches with patch
+#+BEGIN_SRC sh
+    patch < foo.patch    
+#+END_SRC
+    You could specify an p level to instruct patch to ignore parts of the path
+    name so that it can identify the file correctly.
+
+    
+*** Remove patches with patch
+#+BEGIN_SRC sh
+    patch -p5 -R < foo.patch
+#+END_SRC
+    
+*** Create patches with diff
+    To create patch for a single file:
+#+BEGIN_SRC sh
+    diff -u original.c new.c > original.patch
+#+END_SRC
+    To create patches for an entire source tree:
+#+BEGIN_SRC sh
+    cp -R original new
+    diff -rupN original/ new/ original.patch
+#+END_SRC
+    
+** Socket IO
+   Several pair of IO functions are involved in socket reading and writting.    
+*** read & write
+    Since sockets are normal file descriptors, so system read and write function
+    also could be used.
+    - read :: read() attemp to read up to /count/ bytes from the file descriptor
+	      /fd/ into buffer starting at /buf/. 
+#+BEGIN_SRC c
+    ssize_t read(int fd, void *buf, size_t count);    
+#+END_SRC
+    - write :: write() writes up to /count/ bytes from the buffer pointed buf to
+	       the file referred to by the file descriptor fd.
+#+BEGIN_SRC c
+    ssize_t write(int fd, const viod* buf, size_t count );
+#+END_SRC
+
+*** recv & send
+    These two functions are similar to standard read and write functions, but
+    one additional argument is required.
+#+BEGIN_SRC c
+    #include <sys/socket.h>
+
+    ssize_t recv(int sockfd, void *buff, size_t nbytes, int flags);
+    ssize_t send(int sockfd, const void *buff, size_t nbytes, int flags);
+            Both return: number of bytes read or written if OK, -1 on error    
+#+END_SRC
+    
+
+*** recvfrom & sendto
+    recvfrom and sendto are similiar to recv and read except they provide
+    additional parameters to specify the connection information. recvfrom and
+    sendto are indent to be used in UDP programming.
+
+** GDB   
+*** How to stop the program when access a specific memory region
+    use awatch, watch, rwatch
+
+* Cookbook
+** I/O Multiplexing   
+*** How to select
+    select return 3 kinds of values
+    - -1 :: means error occurred.
+    - 0 :: means no descriptors are ready. This happens when time limit expires
+           before descriptors are ready.
+    - >1 :: specifies the number of descriptor that are ready.
+	   
+
+
+* Org Configuration
+#+STARTUP: hidestars

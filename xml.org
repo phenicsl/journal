@@ -1,0 +1,219 @@
+#+STARTUP:hidestars
+
+* XML notes
+** XML Fundamentals
+*** XML Names
+**** XML may contain following characters:
+     + alphanumeric characters
+     + non-English letters, numbers and ideograms
+     + underscore
+     + hyphen
+     + period
+**** XML names may note contains whitespace of any kind
+**** Colon is allowed, but its use is reserved for namespace
+**** All names beginning wit string "XML" are reserved
+**** May note start with a number, hyphen, or period
+     
+*** CDATA sections
+    Everything between the *<!CDATA[* and *]]>* is treated as raw character data.
+*** Comments
+    Comments begin with *<!--* and end with *-->*, The double hyphen *--* should
+    not appear inside the comment until the closing *-->*.
+*** Processing Instructions
+    + Processing instruction begins with *<?* and end with *?>*. 
+    + Immediately following the *<?* is an XML name called the
+      /target/. /target/ is possibly the name of the application for which this
+      processing instruction is intended or possibly just an identifier for this
+      particular processing instruction
+    + The rest of the processing instruction contains text in a format
+      appropriate for the application for which the instruction is intended.
+    + Processing instructions are makeup, but they're not
+      elements. Consequently, like comments, processing may appear anywhere in
+      an XML document outside a tag, including before or after the root element.
+*** XML Declaration
+    + XML declaration looks like a processing instruction with the name XML and
+      version, standalone and encoding attributes.
+    + XML declaration is not nessary
+    + XML declaratio must be the first thing in the document if it exist
+
+
+
+** Namespace
+*** Purposes
+    1. To distinguish between elements and attributes from different
+       vocabularies with different meaning and that happen to share the same
+       name
+    2. To group all the related elements and attributes from a single XML
+       application together so that software can easily recognize them.
+       
+*** Namespace Syntax
+    + Prefixes are bound to namespace URIs by attaching an xmlns:prefix
+      attribute to the prefixed element or /one of its ancestors/
+    + Prefix can be declared in the topmost element that uses the prefix or in
+      any ancesotr thereof
+    + unprefixed attributes are never in any namespace. The only way an
+      attribute belongs to a namespace is putting it with a prefix
+    + If prefix is redefined, the closest ancestor element that declares the
+      prefix takes precedence.
+    + Namespace URLs do not necessarily point to any actual document or page and
+      even don't have to use the http scheme.
+    + Xmlns without a prefix will define default namespace for elements. Default
+      namespace do not influence attribute.
+    
+*** Namespacs and DTDs
+    + Name of the element in the document must exactly match the name of the
+      element in the DTD including the prefix
+    + DTD cannot omit the prefix in defining XML elements and attributes
+    + If element use the default namespace, then DTD should not define it with
+      the prefix
+
+
+** XML as Data Format
+*** Why Use XML for Data?
+    + Simple syntax
+    + Support for nesting
+    + Easy to debug
+    + Language and platform independent
+*** Communications
+    + flexibility
+    + cross-platform usability
+*** Object Serialization
+    + same reason as using in communication
+    + manually editable, could make manual modification and even repairing
+      damaged file.
+ 
+
+** XML Schema
+*** Overview
+**** Schema Definition						    :DEFINITION:
+     + A schema is a formal description of what comprises a valid document.
+     + An XML schema is an XML document containing a formal description of what
+       comprises a valid XML document.
+     + A W3C XML Schema Language is an XML schema written in the particular
+       syntax recommended by the W3C.
+**** Schema and Schema Instance
+     An XML document described by a schema is called an instance document. The
+     schema document is associated with an instance document through one of the
+     following methods:
+       1. xsi:schemaLocation
+       2. xsi:noNamespaceSchemaLocation
+**** Namespace Issues
+     + XML Namespace recommendation was released after the XML 1.0
+       recommendtion.
+     + DTDs do not provide explicite support for declaring namespace-aware XML
+       applications.
+     + Schemas validate against the combination of the namespace URI and local
+       name rather the prefixed name
+*** Schema Basics
+**** Document Organization
+     + XML elements make up an XML schema must belong to the XML schema
+       namespace http://www.w3.org/2001/XMLSchema. 
+     + Any element that is declared globally may appear as the root element of
+       an instance document  
+**** Use xerces-j to validate xml schema
+     + download xerces2-J and install it in your system, set environment parameters
+     + xerces2-J provides a xercesSamples.jar library which contains several
+       utilities. There utilities could be used by adding xercesSamples.jar in
+       CLASSPATH. 
+     + dom.Writer is a XML DOM parser that could validate XML file by using "-v
+       -s" parameters.
+**** Annotations
+     + Most schema elements may contain an optional xs:annotation element as
+       their first child element.
+     + xs:annotation may contain any combination of xs:documentation and
+       xs:appinfo elements.
+     + xs:documentation and xs:appinfo can contain any combination of character
+       data or markup the schema author wants to include. There is little
+       difference between this two elements.
+     + Schema specification intended the xs:documentation element to contain
+       human-readable content, while the xs:appinfo could contain
+       application-specific extension information related to a particular schema
+       element.
+**** Working with Namespaces
+     + Schema understand XML namespace.
+     + If schema file do not specify a XML namespace for elements and attributes
+       defined in it, XML instance use *xsi:noNamespaceSchemaLocation* to
+       reference schema file.
+     + If schema file specifys a namespace by *targetNamespace* attribute, then
+       XML instance should use *xsi:schemaLocation* to reference schema file.
+     + XML namespace declaration puts every elements and every attribute
+       declared in schema file into a specific namespace. When you refer a
+       external element, you must specify the XML namespace explicitely.
+     + The /elementFormDefault/ and /attributeFormDefault/ attributes of the
+       xs:schema element controls whether locally declared elements and
+       attributes must be namespace-qualified within instance
+       documents. Elements qualification could be achived by default namespace
+       declaration or an explicit prefix, but attribute always need to be
+       explicit prefixed because attribute do ont inherit the default namespace.
+**** Complex Types
+     + xs:simpleContent element could only contain simple content(no nested
+       elements).
+     + xs:complexContent element can only contain complex content(elements).
+
+**** Simple Content<2008-09-13 Sat>
+     + Schemas can strictly control the possbile values of simple types through
+       a mechanism called facets.
+     + Facets are applied to simple types using xs:restriction element.
+       1. /whiteSpace/ facets controls how the schema processor will deal with any
+          whitespaces within the target data.
+       2. The /length/ facet forces a value to be exactly the length given. 
+       3. /enumeration/ facet provides possible values for a element
+       4. /minInclusive/, /minExclusive/, /maxInclusive/, /maxExclusive/ facets
+          provide minimum and maximum values.
+       5. /totalDigits/ and /factionDigits/ control the length and precision of
+          decimal numeric values.
+       6. /pattern/ facet provide regular expression pattern restriction on the
+          format of string value.
+       7.
+**** Mixed Content
+     + /mixed/ attribute of the *complexType* element controls whether character
+       data may appear within the body of the element with which it is
+       associated.
+     + 
+**** Using Multiple Documents
+     + /xs:include/ element is reated as through it were actually a part of the
+       including schema document
+     + xs:redefine elements works very much like the xs:include element. The
+       major difference is that within the scope of the xs:redefine element,
+       types from the included schema may be redefined without generating an
+       error from the schema processor.
+     + Using /xs:import/, it is possible to make the global types and elements
+       that are declared by a schema belonging to another namespace accessible
+       from within an arbitrary schema.
+**** Indicator
+     + For all "order" and "Group" indicator(any, all, choice, sequence, group
+       name and group reference) the default value for maxOccurs and minOccurs
+       is 1.
+     + Group indicators are used to define related sets of elements. You must
+       define an all, choice, or sequence element inside the group
+       declaration. After defined a group, you can reference it in another
+       definition.
+     + Group and attributeGroup are used to define element group and attribute
+       group for futher reference and reuse.
+     + the <any> element enables us to extend the XML document with elements not
+       specified by the schema.
+**** Unique Particle Attribution
+     + The Unique Partical Attribution rule is XML Schema's mechanism to prevent
+       schema ambiguity. As an example, when use /xs:any/ to declare an element
+       with any child systems, user should avoid the ambiguous situation that an
+       child element may could be associated with an explicite declared element
+       or be associated with /xs:any/. for example the schema below:
+#+BEGIN_SRC xml
+<xs:sequence>
+  <xs:element name="x" type="xs:integer" minOccurs="0"/>
+  <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+</xs:sequence>
+#+END_SRC
+       Given the instance fragment:
+#+BEGIN_SRC xml
+<x>42</x>
+#+END_SRC  
+       Element x is ambiguous, because it may be associated with declared
+       element x or be associated with element declared to be /xs:any/.
+**** anyAttribute
+     The /anyAttribute/ element enables us to extend the XML document with
+     attributes not specified by the schema. 
+**** IDREF
+     + xs:IDREF is a subtype of xs:NCName, with the additional
+       restriction that the value is used elsewhere int the instance
+       document on an item with type xs:ID.

@@ -1,0 +1,18 @@
+
+* 
+
+* Google Code with Mercurial
+** Google Code
+  + clone google code to local repository with
+#+BEGIN_SRC sh
+  hg clone https://project-name.googlecode.com/hg/    
+#+END_SRC
+** Mercurial
+  + Mercurial does not have the Index concept as git, so you could use /hg add/
+    to add a new file to the repo, but /hg add/ is not appropriate to be used
+    again when you update a file. In reverse, you should use /hg commit
+    <filename>/ directly when update a file.
+  
+* Org Configuration
+#+STARTUP: hidestars
+#+TAGS: show

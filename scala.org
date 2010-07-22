@@ -1,0 +1,603 @@
+* Scala
+* Object-Oriented
+*** Traits   
+*** Basic
+    Traits look similar to classes but have some significant differences. 
+    + First, they require the mixed-in class to implement the uninitialized
+      (abstract) variables and values declared in them.
+    + Second, their constructor cannot take any parameters. 
+
+*** Selective Mixins
+    You can also mix in traits selectively at an instance level. 
+#+BEGIN_SRC 
+    trait Friend {
+        val name: String
+	def listen( ) = println("Your friend " + name + " is listening")
+    }
+
+    val snowy = new Cat("Snowy") with Friend
+#+END_SRC
+    
+*** Inherite from classes
+    Traits could inherite from a base class which gives it two capabilities:
+    1. This traits can only be mixed in only with classes that extend from the
+       traits' base class
+    2. methods could be used within there traits
+
+*** Mehthod late binding
+    When you invoke /super.method/ in classes with multiple traits inherited,
+    scala will perform a 
+
+*** Multiple Inheritance Rules
+    When considering the inheritance hierarchies of classes and traits, they are
+    in many ways similar:
+    * Both can use with clauses to inherit from additional traits (with some
+      restrictions, see below). 
+    * Every class and trait declaration is always implicitly extended to include
+      with ScalaObject at the end. If you explicitly add with ScalaObject you
+      will get an error that it has been inherited twice. 
+    * If a class or trait does not explicitly extend any class or trait, then
+      its superclass is AnyRef, which compiles to java.lang.Object (just as in
+      Java). 
+    * If a class or trait is declared to extend a trait directly rather than
+      extending a class with that trait, that declaration is treated the same as
+      if it explicitly extended the trait's superclass with the trait. 
+    * Every user-defined class and trait has exactly one superclass that it
+      extends, which is one of 
+         1. the explicitly extended superclass (as opposed to extending a
+            trait), 
+         2. the superclass of the trait being explicitly extended, or
+         3. implicitly AnyRef when nothing is explicitly extended. 
+
+**** Linearization of a class
+     The linearization of a class is calculated using the following algorithm:
+
+     1. Start with the class declaration, for example:    
+#+BEGIN_SRC 
+    	class C extends S with T1 with T2
+#+END_SRC
+	
+     2. Convert the declaration to canonical form by ensuring that it extends a
+	class rather than a trait and adding ScalaObject at the end: 
+#+BEGIN_SRC 
+	class C extends S with T1 with T2 with ScalaObject
+#+END_SRC	   	   
+
+     3. Reverse the order of the list, except keep C at the beginning, and drop
+	the other keywords: 
+#+BEGIN_SRC 
+    	C T2 T1 ScalaObject S
+#+END_SRC
+
+     4. Replace each item in the list except the first (C) with its
+	linearization: 
+#+BEGIN_SRC 
+        C T2L T1L ScalaObjectL SL
+#+END_SRC
+
+     5. Insert a right-associative list-concatenation operator between each
+        element in the list:
+#+BEGIN_SRC 
+      C +: T2L +: T1L +: ScalaObjectL +: SL
+#+END_SRC
+
+     6. Evaluate the list to get the final linearization. The operator works on
+        two lists as follows: remove any items from the left hand list that
+        appear in the right hand list, then prepend the remaining items from the
+        left hand list to the right hand list. The operator is
+        right-associative, so start with the two lists on the right end (in this
+        example, ScalaObjectL and SL) and work your way to the left until all
+        lists have been combined.
+
+**** Method Overriding
+     
+*** Abstract and Override
+    If an method is declared with definition, then it is an abstract method. As
+    in java, the class itself should be declared to be *abstract* when there is
+    an abstract method. 
+
+    No matter field or method, if an unabstract member has been override inside
+    a derived class, *override* modifier should be specified. But if the member
+    is abstract, then *override* keyword is optional.
+
+    *override* modifier is required whe nonabstract implementation is overrided,
+    It has the advantage to forbid acciental override.
+
+**** parameterless methods
+     parameterless methods are methods with no parameters and be defined without
+     using parentheses. Such methods could be override by val fields. But the
+     reverse is not allowed. Method is considered to be unstable, It is not
+     allowed to override stable val field with unstale method.
+
+* Functional   
+** Higher order function
+   Higher order function is a function that takes a function as a parameters or
+   returns a function as result.
+
+** TODO Monads
+   *Understand it* would you
+   Monads are containers which have several higher order funcitons defined. 
+** Pattern Matching
+    + You can directly match against literals and constants. The literals can be
+      different types; the match does not care.
+** Curring
+   "In computer science, curring, invented by Moses Schönfinkel and Gottlob
+   Frege, is the technique of transforming a function that takes multiple
+   arguments into a function that takes a single argument(the other arguments
+   having been specified by the curry).
+
+   What this is saying that the curring process transform a function of two
+   parameters into a function of one parameter which returns a function of one
+   parameter which itself returns the result.
+
+#+BEGIN_SRC scala
+  // how to understand this function
+  // Why recurse is lazy and why curring and partially applied functions matter
+  // here.
+
+  def process[A](filter:A=>Boolean)(list:List[A]):List[A] = {
+    lazy val recurse = process(filter) _
+   
+    list match {
+      case head::tail => if (filter(head)) {
+        head::recurse(tail)
+      } else {
+        recurse(tail)
+      }
+   
+      case Nil => Nil
+    }
+  }
+   
+  val even = (a:Int) => a % 2 == 0
+   
+  val numbersAsc = 1::2::3::4::5::Nil
+  val numbersDesc = 5::4::3::2::1::Nil
+   
+  process(even)(numbersAsc)   // [2, 4]
+  process(even)(numbersDesc)  // [4, 2]
+#+END_SRC
+  I think the only purpose for curring here is that /process(filter, list)/ could
+  be defined to be /recurse(list)/ when paramter /filter/ is known. 
+* Generic
+** Lower Bounds and Upper Bounds
+   Scala has the ability to express lower bounds and upper bounds to method
+   paramters.      
+
+* Libraries
+** Parser Combinator   
+   "Parsers are invoked upon an input stream. They will consume a certain number
+   of tokens and then return a result along with the truncated
+   stream. Alternatively, they will fail, producing an error message."
+
+   The real power of parser combinations is in what happends when you start
+   combining them together(hence the name).
+
+
+* From Books
+** Programming in Scala Reading Notes   
+*** Classes and Objects    
+    - Whenever you leave off the equals sign before the body of a function, its
+      result type will definitely be Unit. 
+    - The rules of semicolon inference
+      A line ending is treated as a semicolon unless one of the following
+      conditions if true:
+      1. The line in question ends in a word that would not be legal as the end
+         of a statement, such as a period or an infix operator
+      2. The next line begins with a word that cannot start a statement.
+      3. The line ends while inside parentheses (...) or brackets[...],
+	 because these cannot contain multiple statements anyway.
+
+    - Scala implicitly imports members of packet java.lang and scala, as well as
+      the members of a singleton object named Predef, into every Scala source
+      file. Predef, which resides in packet scala, contains many useful
+      methods including println and assert.
+
+    - Application Traits
+      By extending Application traits, you can put the code between the curly
+      braces of the singleton object rather than in main method. 
+      
+      This works because the code between the curly braces is collecte3d into a 
+      *primary constructor* of the singleton object, and is executed when the
+      class is initialized. For example
+#+BEGIN_SRC scala
+    object MainApplication extends Applicaiton{
+        println("Hello ")
+    }
+#+END_SRC
+      
+    - Whenever you call a method that takes multiple arguments using operator
+      notation, you have to place those arguments in parentheses.
+
+    - In Scala, prefix and postfix operators are unary: the take just one
+      operand.
+      + prefix operators method has "unary_" prepended to the operator
+        character. For example, Scala will translate "-2.0" into the method
+        invocation "(2.0).unray_-". 
+      + The only identifiers that can be used as prefix operators are +, -, !
+        and ~.
+
+    - Scala decides predecence based on the first character of the methods used
+      in operator notation. Following table is the operator precedence.
+
+    - The *associativity* of the operatora in Scala is determined by its last
+      character. But no matter what associativity an operator has, its operands
+      are alwarys evaluated left to right.
+
+    - The *require* method takes one boolean parameter. If the passed value is
+      true, require will return normally. Otherwise, require will prevent the
+      object from being constructed by throwing an IllegalArgumentException.
+
+    - In Scala, each auxiliary constructor must invoke another constructor of
+      the same class as its first action. In other words, the first statement in
+      every auxiliary constructor in every Scala class will have the form
+      "this(...)". The invoked constructor is either the primary constructor, or
+      another auxiliary constructor that comes textually before the calling
+      constructor. The net effect of this rule is that every constructor
+      invocation in Scala will end up eventually calling the primary constructor
+      of the class. The primary class is thus the single point of entry of a
+      class.
+
+
+*** Built-in Control Structures
+    - The value of type Unit is called unit value and is written to be "()". 
+
+    - In Scala, *throw* is an expression that has a result type. 
+
+    - As with most other Scala control structures, /try-catch-finally/ results
+      in a value. The result is that of the try clause if no exception is
+      thrown, or the relevant catch clause if an exception is thrown and
+      caught. If an exception is thrown but not caught, the expression has no
+      result at all. The value computed in the /finally/ clause, if there is
+      one, is dropped.
+
+
+
+*** TODO Load Pattern
+    
+
+*** Functions and Closures
+    - Local functions can access the parameters of their enclosing function.
+
+    - Target typing ::
+      targeted usage of an expression is allowed to influence the typing of the
+      expression. So it could be used to determine the type of parameter. for
+      example, in following statement
+#+BEGIN_SRC scala
+      someNumbers.filter((x) => x > 0 )
+#+END_SRC
+      There is no need to write the type of parameter 'x' explicitly since it
+      could be inferred.
+
+    - Partially appliede functions ::
+      You could express a partially applied function by supplying some but not
+      all of the required arguments. for example:
+#+BEGIN_SRC scala
+      val b = sum(1, _: Int, 3)
+#+END_SRC
+      will return a partially applied function with one parameter by supply
+      first and third argument to sum.
+
+    - Repeated Parameters ::
+      Scala allows you to indicate that the last parameter to a function may
+      be repeated. To denote a repeated parameter, place an asterisk after the
+      type of the parameter.
+      
+      Inside the function, the type of the repeated parameter is an Array of
+      the declared type of the parameter. But an array could be passed into
+      function as the repeated paramters. To accomplish this, you'll need to
+      append the array argument with a colon and an _* symbol. For example        
+#+BEGIN_SRC scala
+      def echo(args: String*) = 
+          for (arg <- args ) println(arg)
+
+      val strArray = Array("first", "second")
+      echo(strArray: _*)
+#+END_SRC
+      This notation tells the compiler to pass each element of arr as its own
+      argument to echo.
+
+    - Tail recursion ::
+      The use of tail recursion in Scala if faily limited, because the JVM
+      instruction set make implementing more advanced forms of tail
+      recursion very difficult. Scala only optimizes directly recursive
+      calls back to the same function making the call
+	
+*** Control Abstraction
+    - Currying ::
+      Currying is passing function with multiple parameters lists instead of
+      single parameter list. It is actually defining function return another
+      function which accept rest parameters.
+
+    - In any method invocation in Scala in which you're passing in exactly one
+      argument, you can opt to use curly braces to surround the argument instead
+      of parenthese.
+
+      The purpose of this ability to substitute curly braces for parentheses for
+      passing in one argument is to enable client programmers to write function
+      literals between curly braces.
+
+    -  By-name paramter ::
+       When a function receives a function without any paramter as a parameter,
+       then instead of writing "() => ResultType", one can write it as "=>
+       ResultType". In this case, function body could be passed into the
+       function directly without write it as a function.
+	
+
+
+*** Traits
+    - You can use the /extends/ keyword to mix in a trait; in that case you
+      implicitly inherit the trait's superclass.
+
+    - Difference between classes and traits ::
+      1. A trait can not have any "class" parameters.
+      2. /super/ calls are statically bound in classes, but in traits, they are
+         dynamically bound.
+
+    - Traits provides stackable modifications to classes. Traits let you modify
+      the methods of a class and they do so in a way that allows you to stack
+      those modifications with each other.
+
+    - If you call  a method on a class with mixins, the method in the trait
+      furthest to the right is called first. If that method calls super, it
+      invokes the method in the next trait to its left, and so on.
+
+    - When you instantiate a class with new, Scala takes the calss and all of
+      its inherited classes and traits and put them in a single, linear
+      order. Then, whenever you call super inside one of those classes, the
+      invoked method is that next one up the chain.
+
+    - Linearization ::
+      Linearization is taking place by pushing its super class' and traits'
+      linearning result into a list:
+      1. Firstly, its super class will be evaluated and super class'
+         linearizaion result will be putted to the end of the list.
+      2. After that, each trait it is inherited will be evaluated from left to
+         right and each trait's linearization result will be added to the front
+         of the list. Here, items that already exist in the list will not be
+         added again.
+
+*** Packages and Imports
+    - Access modifiers in Scala can be augmented with qualifiers. A modifier of
+      the form /private[X]/ or /protected[X]/ means that access is private or
+      protected "up to" X, where X designateds some enclosing package, class or
+      singleton object.
+
+    - In Scala, a class shares all its access rights with its companion object
+      and vice versa.
+
+*** Assertions and Unit Testing
+    - /assert/ method will throw AssertionError when prediction is false
+
+    - The /ensuring/ method can be used with any result type because of an
+      implicit conversion. /ensuring/ also throw AssertionError on false.
+
+*** Case classes and Pattern Matching
+    twin constructs that support you when writing regular, non-encapsulated data
+    structures. There two constructs are particularly helpful for tree-like
+    recursive data.
+      
+
+*** Lists
+    - First-order methods ::
+      A method is first-order if it does not take any functions as arguments.
+
+| Feature          |   |
+|------------------+---|
+| Typed Parameter  |   |
+| Pattern Matching |   |
+|                  |   | 
+  
+
+*** Type Inference Algorithm
+    - Type inference in Scala is flow based.
+
+    - In a method application, the inferencer first checks whether the method
+      has  a known type. If it has, that type is used to infer the expected
+      type of the arguments.
+
+    - If the type of method is not known, then inferencer will change strategy
+      to first check method arguments to determine 
+
+    - Generally, when asked to infer the type parameters of a polymorphic
+      method, the type inferencer consult the types of all value arguments in
+      the first parameter list but no argumetns beyond that.
+
+*** Type Parameters
+    - Unlike Java, which allows raw types, Scala requies that you specify type
+      paramters.
+
+    - Private constructors ::
+      + In Scala, the primary constructor does not have an explicit definition;
+        it is defined implicitly by the class parameters and body. Nevertheless,
+        it is still possible to hide the primary constructor by adding a
+        *private* modifier in front of the class parameter list.
+
+      + The *private* modifier between the class name and its parameters
+        indicates that the constructor of class is private: it can be accessed
+        only from within the class itself and its companion object.
+
+    - private class ::
+      Another, more radical way is to hide the class itself and only export a
+      trait that reveals the public interface of the class
+
+    - covariant ::
+      - In Scala, however, generic types have by default /nonvariant/
+        subtyping. Prefixing a formal type parameter with a *+* indicates that
+        subtyping is covariant in that parameter.
+
+      - Clearly it's not just mutable fieds that make covariant types
+        unsound. The problem is more general. It turns out that as soon as a
+        generic parameter type appears as the type of a method parameter, the
+        containing class or trait may not be covariant in that type parameter.
+
+      - Scala compiler will check any variance annotations you place on type
+        parameters. If that could lead to potential runtime errors, your program
+        won't compile.
+
+	- Verfication Method ::
+	  To verify correctness of variance annotations, the Scala compiler
+          classifies all positions in a class or trait body as positive,
+          negative, or neutral.
+
+	  A position is any location in the class body where tyep parameter may
+          be used. 
+	  1. Type parameters annotated with *+* may only be used in positive
+             positions.
+	  2. Type parameters annotated with *-* may only be used in negative
+             positions.
+
+      - Function1 ::
+	Scala standard library defines Function1 with both covariance and
+        contravariance.
+#+BEGIN_SRC scala
+	trait Function1[-S, +T] {
+	    def apply(x: S): T
+	}
+#+END_SRC
+	It means parameter S is contravariance and T is covariance. 
+	
+	For example if SS is a super class of CC, then Function1[CC, TT] is a super
+        class of Function1[SS, TT]. It is natural, Function1[CC, TT] requires
+        paramter to be type CC and Function1[SS, TT] requires parameter to be
+        type SS. We absolutely could substitute Function1[SS, TT] with
+        Function1[CC, TT]. 
+
+*** Abstract Membmers
+    - Besides methods, Scala allows user to declare abstract fields and even
+      abstract types as memebers of classes and traits.
+
+    - Abstract vals ::
+      An abstract val constrains its legal implementation: any implementation
+      must be a /val/ definition; it may not be a var or a def.
+
+      - Abstract vals sometimes play a role analogous to superclass parameters:
+        they let you provide details in a subclass that are missing in a
+        superclass. The is particularly important for traits, because traits
+        don't have a constructor to which you could pass parameters.
+
+      - Pre-initialized fields ::
+	Pre-initialized fields lets you initialize a field of a subclass before
+        the superclass is called. Simply place the field definition in braces
+        before the superclass constructor call.
+
+      - Lazy vals ::
+	If you prefix a /val/ definition with a *lazy* modifier, then
+        initializing expression on the right-hand side will only be evaluated
+        the first time /val/ is used.
+
+
+*** Implicit Conversions and Parameters
+    - Implicit conversion rules:
+      1. Marking Rule ::
+	 Only definitions marked /implicit/ are available
+	 
+	 The /implicit/ keyword is used to mark any variable, function, or
+         object definition.
+
+      2. Scope Rule ::
+	 An inserted implicit conversion must be in scope as a single
+         identifier, or be associated with the source or target type of the
+         conversion.
+
+	 - single identifier ::
+	   single identifier means the conversion marked object must be in scope
+           as a /single identifer/. There is one exception to the "single
+           identifier" rule. The compiler will also look for implicit
+           definitions in the companion object of the source or expected target
+           types of the conversion.
+
+      3. Non-Ambiguity Rule ::
+	 An implicit conversion is only inserted if there is no other possible
+         conversion to insert.
+
+      4. One-at-a-time Rule ::
+	 Only one implicit is tried.
+
+	 For sanity's sake, the compiler does not insert further implicit
+         conversions when it is already in the middle of trying another implicit.
+
+      5. Explicits-First Rule ::
+	 Whenever code type checks as it is written, no implicits are attempted.
+
+      6. Naming an implicit conversion ::
+	 Implicit conversions can have arbitrary names.
+
+      7. Where implicits are tried ::
+	 There are three places implicits are used in the language:
+	 1) conversion to an expected type
+
+	    Wherever the compiler sees an X, but needs a Y, it will look for an
+            implicit function that convert Y to X.
+
+	 2) conversions of the receiver of a selection
+
+	    Implcit conversions also apply to the receiver of method call, the
+            object on which th method is invoked.
+
+	 3) implicit paramters
+
+	    Compiler sometimes may add a missing paramter list to complete an
+            function call.
+
+	    Note the /implicit/ keyword applies to an entire paramter list, not
+            to individual parameters.
+
+	    Because the compiler selects implicit parameters by matching types
+            of parameters against types of values in scope, implicit parameters
+            usually have "rare" or "special" enough types that accidental
+            matches are unlikely.
+
+*** For expression
+    All for expressions that yield a result are translated by the compiler into
+    combinations of invocations of the high-oerder methods map, flatMap and
+    filter.
+    
+    - To support the full range of for expressions and for loops, you need to
+      define *map, flatMap, fileter and foreach* as methods of your data type.
+
+*** Extractors
+    Sometimes, you might wish to be able to create your own kinds of patterns.
+    
+    Extractor let you define new patterns for perexisting types, where the
+    pattern need to follow the internal representation of the type.
+
+    An extractor in Scala is an object that has a method called /unapply/ as one
+    of its members. The purpose of that /unapply/ method is to match a value and
+    take it apart.
+
+    Whenever pattern matching encounters a pattern refering to an extractor
+    object, it invokes the extractor's unapply method on the selector
+    expression. 
+
+    - Pattern with zeron or one variable ::
+      To bind N variables, an /unapply/ would return an N-element tuple, wrapped
+      in a Some.
+
+    - Variable argument extractors ::
+      Extractor use a method called /unapplySeq/ to support vararg matching,
+      the result type of an unapplySeq must conform to Option[Seq[T]].
+
+    - Conclution of return value type ::
+      1. zero variable matching: Boolean
+      2. one variable matching: Option[T]
+      3. more than one variables matching: Option[Tuple[T]]
+      4. vararg matching: Option[Seq[T]]
+
+*** Regular Expressions
+    Scala provides regular expressions through a library, but extractors make it
+    much nicer to interfact with them.
+
+*** Annotation
+    - Annotation are allowed on any kind of declaration or definition, including
+      vals, vars, defs, classes, objects, traits and types.
+
+    - Annotation can also be applied to an expression, as with the @unchecked
+      annotation for pattern matching. To do so, place a colon (:) after the
+      expression and then write the annotation.
+    
+
+* Misc
+* Org Configuration
+#+STARTUP:hidestars
+#+STARTUP: contents

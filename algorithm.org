@@ -1,0 +1,19 @@
+#+STARTUP:hidestars
+#+STARTUP:showall
+
+* Algorithm Notes
+** Breadth First Search(BFS)
+   + Use a array or other data structure to record whether an element has been
+     visited.
+   + When extend an element, do not validate extended elements right away.
+     Instead, validate elements only when visit them. Because we always use a
+     data structure to record the visit status of an element, so we can make
+     sure only validate an element at most once. If we validate the element when
+     we extend to it, element will be validate multiple times and increase the
+     time usage significantly.
+
+** Flood fill 
+   + You can flood fill with 4 directions or with 8 directions.
+
+** Brute Force and Backtracking
+   + 

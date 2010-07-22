@@ -1,0 +1,13 @@
+* CVS
+** Repository
+   CVS uses a centralized model of version management. A centralized repository
+   should be created firstly, then you can import your exist proect into the
+   repository. After this, then you can checkout the project and work as a new
+   version of the project.
+** Committing
+   
+
+
+* Org Configuration
+#+STARTUP: hidestars
+#+TAGS: show
