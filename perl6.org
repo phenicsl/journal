@@ -186,6 +186,42 @@
      list that has not yet committed to flattening; no interpolation is made of
      the list inside without knowing what context it will be evaluated in.
 
+* Notes
+** [2010-07-24 Sat] Use multi-dispatch to avoid shadowing the original definition of operator  :@subroutine:
+  As following: 
+#+BEGIN_SRC perl
+  class Unit { ... }
+  
+  multi sub infix:<*>(Unit $a, $b);
+#+END_SRC  
+ 
+** [2010-07-24 Sat] subroutine and method in Perl6	 :@subroutine:
+   Subroutine and methods has different semantics to invoke, when invoke a
+  subroutine it is totally safe to use either parentheses or use a list. for
+  example:
+#+BEGIN_SRC perl
+  sub foo($a, $b, Callable $block) {
+      say $block($a), ", ", $block(b);
+  }
+
+  foo 1, 2, { $^a + 1 };	#2, 3
+#+END_SRC
+
+  But for methods, it is not valid to use a parameter list unless you append a
+  colon:
+#+BEGIN_SRC perl
+  class Test {
+     method foo($a, $b, Callable $block) {
+         say $block($a), ", ", $block(b);
+     }
+  }
+
+  my Test $t .= new;
+  $t.foo(1, 2, -> $a { $a + 2 }; #3, 4
+  $t.foo: 1, 2, -> $a { $a + 2 }; #same as previous line
+#+END_SRC
+
+
 * Org Configuration
 #+STARTUP: hidestars
 #+TAGS: contents
