@@ -1,0 +1,4 @@
+* Introduction
+
+This is my personal notes and journals for daily work in Emacs Orgmode format.
+
