@@ -1,0 +1,73 @@
+* Resource Collections					     :@DataType:@Ant:
+  A Resource Collection is an abstraction of an entity that groups together a
+  number of resources. 
+
+* Path-like Structures					     :@DataType:@Ant:
+  /path/ and /classpath/ are used to represent the path concept with "path"
+  separated by ":" and ";". 
+
+  You may consider them as a container of pathes represent an /path/ that may be
+  used in other places. There are several different ways to specify elements
+  inside a /path/ container:
+  1. Nested /pathelement/ element.
+     There are two attribute for an /pathelement/ element: "path" attribute
+     contains a string with pathes that separated by delimiter; "location"
+     attribute that contains a specific location. Location could be a
+     directory or file.
+  2. Resource Collections that contains only file-type resources could be
+     specified inside /path/. Common used resource collections includes
+     /fileset/, /dirset/, /filelist/.
+  3. Reference to another path-like structure via nested /<path>/ element.
+
+* if/unless attribute for target				 :@Task:@Ant:
+    A target has the ability to perform its execution if(or unless) a property
+    has been set. For example:
+#+BEGIN_SRC nxml
+  <target name="java-env-check" unless="env.JAVA_HOME">
+    <fail message="JAVA_HOME environment variables must be set."/>
+  </target>
+#+END_SRC
+    This example will fail the building unless /JAVA_HOME/ environment variable
+    has been set.
+
+* @Stateless Annotation 					      :@EJB3:
+  @Stateless annotation marks a stateless session bean. This means that the
+  container automatically provides such services to the bean as :
+  1. automatic concurrency control. (will create thread for each request to the
+     session bean?)
+  2. thread safety
+  3. pooling
+  4. transaction management. (How?)
+
+* The whole point of building server-side application		      :@EJB3:
+The *whole point* of building server-side application is that they can be shared
+by a large number of remote clients at the same time. 
+
+Because session beans are specifically meant to handle client requests, they
+must support a high degree of concurrency safely and rebostly. 
+
+* AOP								       :@AOP:
+  AOP is the ability to isolate "crosscutting" concerns into their own modules and
+  apply them across the application through configuration.
+
+* The anatomy of session bean					      :@EJB3:
+  Each session bean implementation has two distinct parts -- one or more bean
+  interface and a bean implementation class. This is because clients cannot have
+  access to the bean implementation class directly. Instead they must use
+  session beans through a business interface. 
+
+* Stateful and Stateless					      :@EJB3:
+  As you’ll soon see, however, this does not mean that stateless session beans
+  cannot have instance variables. Even before we explore any code, common sense
+  should tell us that session beans must cache some resources, like database
+  connec- tions, for performance reasons. The critical distinction here is
+  client expectations.  As long as the client does not need to depend on the
+  fact that a session bean uses instance variables to maintain conversational
+  state, there is no need to use a state- ful session bean.
+
+
+
+* Org Configuration
+#+STARTUP: hidestars
+#+TAGS: show
+#+TAGS: @DataType @Task
