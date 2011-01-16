@@ -596,8 +596,28 @@
       annotation for pattern matching. To do so, place a colon (:) after the
       expression and then write the annotation.
     
+* Notes  
+** three types in shift/reset				      :@continuation:
+   + The type of the argument to pass to the continuation, which is the same as
+     the syntactic return type of the shift in the source code
+     
+     Since the continuation was created by all the computation processes after
+     /shift/. It was obvious that the value returned by /shift/ is part of this
+     continuation and also as the input parameter. 
 
-* Misc
+   + The type of the return from the continuation, which is the same as the
+     return type of all of the code that follows the shift block in the source
+     code
+
+   + The type of the last value in the shift block, which becomes the type of
+     the return value of the enclosing function or return block. This is called
+     the transformed return type.
+
+** shift signature					      :@continuation:
+   shift is a high-order function which received another high-order function as
+   argument. 
+     
+     
 * Org Configuration
 #+STARTUP:hidestars
 #+STARTUP: contents

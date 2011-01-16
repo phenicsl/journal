@@ -17,3 +17,108 @@
 
 ** Brute Force and Backtracking
    + 
+
+* Questions & Answers
+** Longest Increasing Subsequence Problem :			    :@DP:@MF:
+*** Description
+    Given A sequnece of integers x_0, x_1, ... x_{n-1}. Then
+    1. compute the length of longest increasing subsequence s.
+    2. how many distinct subsequence with length = s could be extracted from the
+       integer sequence? 
+    3. if x_0 and x_n could be used multiple times, then how many distinct
+       longest increasing subsequence could be extracted from the original
+       sequence?
+
+*** Answer
+    Longest increasing subsequence problem is a classic Dyanamic Programming
+    problem, which has been discussed in several algorithm books. So the first
+    question could be solved with Dynamic Programming. Second and third problem
+    could be solved with Maximum Flow if we model it appropriately as network
+    model. 
+
+**** Problem 1
+      Problem 1 could be solved with Dynamic Programming, we can have following
+      equations:
+#+BEGIN_SRC text
+      Assume LIS[i] to be the length of longest increasing subsequence start
+      with x_i. So we have:
+      LIS[n - 1] == 1. 
+      LIS[i] = max({LIS[j] : j > i && x_j > x_i }) + 1
+#+END_SRC
+      We could also model LIS[i] to be the length of longest inceasing
+      subsequence as usual, but for solving the rest two problems, this model
+      will be more appropriate. 
+
+**** Problem 2
+     After solving the problem 1, we may model problem 2 as a Maximum Flow
+     problem. We add two special vertex Source and Sink and we also model each
+     element in the n-sequence to be 2 vertics. So totolly 2*n + 2 vertex will
+     be in the graph. Each node will have following vertex for Souce s and Sink
+     t and other integer numbers:
+     | vertex   | vertex number    |
+     |----------+------------------|
+     | Source s | 0                |
+     | Sink t   | 2*n + 1          |
+     | x_i      | 2*i + 1, 2*i + 2 |
+
+     We also do following graph edge connection:
+     1. For the two vertex we created for each x_i, connect them with capacity
+        to be 1.
+     2. Partition x_0, ... X_n to be in different groups by LIS[i]. for each
+        x_i, if LIS[i] == k, then consider each x_j that LIS[j] == k - 1. If 
+	j > i, x_j > x_i, then connect the end vertex of x_i to start vetex of
+        x_j. 
+     3. Connect Source s to start vetex to each x_i that LIS[i] == LIS, connect
+        the end vertex for each x_i that LIS[i] == 1 to Sink t. 
+     
+     All initialization work could be expressed with following code:
+#+BEGIN_SRC c++
+     /* 
+      * Assume follwing :
+      * 1. LIS is the the of longest increasing subsequence. 
+      * 2. groups is a vector<vector<int> > that groups[i] stores a vector of indeies
+      *    that each index i has the property LIS[i] == K.
+      *
+      */
+  
+      Graph graph(2n + 2);
+  
+      for(int i = 0; i < n; i++) {
+          graph.insert_edge(2*i + 1, 2*i + 2, 1);    
+      }
+  
+      // since there will be totally LIS level
+      for(int k = 1; k < LIS; k++){
+          for(int i = 0; i < groups[k].size(); i++) {
+              // for each element with LIS[i] == k do
+              for(int j = 0; j < groups[k - 1].size(); j++) {
+                  if( j > i && X[j] > X[i] ) {
+                      graph.insert_edge(2*i + 2, 2*j - 1, 1);
+                  }
+              }
+          }
+      }
+  
+      for(int i = 0; i < groups[LIS].size(); i++){
+          // connect Source to (LIS[i] == LIS)
+          graph.insert_edge(0, 2*i + 1, 1);
+      }
+      for(int i = 0; i < groups[1].size(); i++) {
+          // connect LIS[i] == 1 to Sink
+          graph.insert_edge(2*i + 2, 2*n, 1);
+      }
+#+END_SRC
+      
+      After the initialization, we do a Maximum Flow search problem, then prblem
+      2 will be solved. 
+
+**** Problem 3
+     The only difference between problem 2 and problem 3 is that in problem 3,
+     x_i and x_{n - 1} could be used multiple times, so could have the maximum
+     capacity to be n. 
+* Org Config
+#+STARTUP: hidestars
+#+TITLE: Algorithm
+#+AUTHOR: pheincsl
+#+EMAIL: phenicsl@gmail.com
+#+TAGS: @DP @MF @BF @BT

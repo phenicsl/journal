@@ -1,5 +1,4 @@
 #+STARTUP: hidestars
-
 * Javascript  
 ** Basic Language Feature   
 *** String Concatenation 
@@ -337,3 +336,11 @@ $(function() {
 });
 #+END_SRC
 
+
+* Notes  
+** undefined variable						  :@variable:
+   when a variable isn't explicitly defined, it will become defined globally,
+   even though it is only used within the context of function scope.
+
+
+   
