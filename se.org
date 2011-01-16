@@ -1,0 +1,112 @@
+* Notes
+** Indexing Process in Luence					    :@Luence:
+   1. Create IndexWriter with indexing directory specified
+   2. Create Document with arbitrary fields
+   3. writer.addDocument(doc)
+** Field Options 						    :@Luence:
+   + For Indexing ::     
+     - Index.ANALYZED
+     - Index.NOT_ANALYZED
+     - Index.ANALYZED_NO_NORMS
+     - Index.NOT_ANALYZED_NO_NORMS
+     - Index.NO
+
+   + For Storing ::
+     - Store.YES
+     - Store.NO
+
+   + For TermVector ::
+     - TermVector.YES
+     - TermVector.WITH_POSITIONS
+     - TermVector.WITH_POSITIONS_OFFSETS
+     - TermVector.NO
+
+   + For Sorting ::
+     - Fields used for sorting must be indexed and must contain one token per
+       document. Typically this means using Field.Index.NOT_ANALYZEd or
+       Field.Index.NOT_ANALYZED_NO_NORMS if you're not boosting document or
+       fields. But if your analyzer will always produce only one token such as
+       KeywordAnalyzer, Field.Index.ANALYZED or Field.Index.ANALYZED_NO_NORMS
+       will work as well.
+
+** MapReduce datea locality					 :@MapReduce:
+   MapReduce tries to colocate the data with the compute node, so the data
+   access is fast since it is local. This feature, known as data locality, is at
+   the heart of MapReduce and is the reson for its good performance.
+   
+
+** Install Hadoop and Installation				     :Hadoop:
+   - Install Hadoop
+     + just download and 
+
+
+** Lucene Buffering and Flushing				    :@Luence:
+   When new documents are added to a Lucene index, or deletion are pending,
+   they're initially buffered in memory instead of being immediately written to
+   the disk. This buffering is done for performance reasons to minimize disk
+   I/O. Periodically, these changes are flushed to the index Directory as a new
+   segment. 
+
+   IndexWriter triggers a flush according to three possible criteria, which are
+   controlled by the application:
+   - To flush when the buffer has consumed more than a preset amount of RAM, use
+     /setRAMBufferSizeMB/.
+   - flush after a specific number of documents have been added by calling
+     /setMaxBufferedDocs/. 
+   - trigger flushing whenever the total number of buffered deleted terms and
+     queries exceeds a specified count by calling setMaxBufferedDeleteTerms.
+
+
+** Combiner function						    :@Hadoop:
+   The combinator function doesn't replace the reduce function. But it can help
+   cut down the amount of data shuffled between the maps and the reduces, and
+   for this reason it is always worth considering whether you can use a
+   combiner function in your MapReduce job.
+
+** HDFS data integrity						      :@HDFS:
+   To insure against corrupted blocks and disk and machine failure, each block
+   is replicated to a small number of physically separate machines(typically
+   three). If a block become unavailable, a copy can be read from another
+   location in a way that is transparent to the client.
+
+** Namenodes and Datanodes
+   A HDFS cluster has two types of node operating in a master-worker pattern: a
+   /namenode(the master)/ and a number of /datanodes(workers)/. The namenode
+   manages the filesystem namespace. It maintains the filesystem tree and the
+   metadata for all the files and directories in the tree. This information is
+   stored persistently on the local disk in the form of two files: the namespace
+   image and the edit log.
+
+   
+** Benifit of blocks in HDFS 					      :@HDFS:
+   - With blocks, a file can be larger than any single disk in the network.
+   - Making the unit of abstraction a block rather than a file simplifies the
+     storage subsystem. 
+   - Blocks fit well with replication for providing fault tolerance and
+     avaiability.
+** Block Replication						      :@HDFS:
+   To insure against corrupted blocks and disk and machine failure, each block
+   is replicated to a small number of physically separate machines(typically
+   three). 
+
+** Hadoop Filesystems
+   Hadoop has an abstract notion of filesystem, of which HDFS is just one
+   implementation. 
+
+** Data Integrity in HDFS					      :@HDFS:
+   HDFS transparently checksums all data written to it and by default verifies
+   checksums when reading data. A separate checksum is created for every
+   io.bytes.per.checksum bytes of data. The default is 512 bytes, and since
+   CRC-32 checksum is 4 bytes long, the storage overhead is less than 1%.
+
+   Datanode are responsible for verifying the data they receive before storing
+   the data and its checksum.
+* Org Configuration
+#+STARTUP: hidestars
+#+TITLE: Search Engine
+#+AUTHOR: phenicsl
+#+EMAIL: phenicsl@gmail.com
+#+TAGS: @Luence @MapReduce @Hadoop @HDFS
+#+OPTIONS:^:nil
+#+DRAWERS: 
+  
