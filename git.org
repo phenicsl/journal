@@ -292,6 +292,26 @@ git checkout /path/to/file/to/revert
 
    Remember to use "git-rm", this command will inform git the deletion of the
    file. Normal "rm" command will not do.
+** How to use git-svn to clone a svn repo?				:svn:
+   git-svn is a bridge to svn repository. With git-svn, you may locally work
+   with git to manage your code and commit to a svn repo at last.
+
+   To clone a svn repository as a local git repo with svn metadata. You may
+   execute following command:
+#+BEGIN_SRC sh
+   $ git svn clone http://www.svnrepo.com/path/to/trunks
+#+END_SRC
+
+   This will fetch all history and contents from the svn repo and most of the
+   time, it will execute a long time. We also could specify an revision number
+   and ask git-svn to fetch only that revision and then execute rebase to get
+   all contents start with that revision:
+#+BEGIN_SRC sh
+   $ git svn clone -r 1281 http://www.svnrepo.com/path/to/trunks
+   $ cd trunks; git svn rebase
+#+END_SRC 
+   It is done!
+
 * Org Configuration
 #+STARTUP: hidestars
 #+TAGS: show
