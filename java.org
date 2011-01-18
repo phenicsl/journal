@@ -66,8 +66,43 @@ must support a high degree of concurrency safely and rebostly.
   state, there is no need to use a state- ful session bean.
 
 
+* Life cycle callback methods					      :@EJB3:
+
+  | Callback Annotation            | Type of EJB              | Used For ...                                  |
+  |--------------------------------+--------------------------+-----------------------------------------------|
+  | javax.annotation.Postconstruct | stateless, stateful, MDB | initialize resources                          |
+  | javax.annotation.PreDestroy    | stateless, stateful, MDB | clean up resources                            |
+  | javax.ejb.PrePassivate         | stateful                 | clean up resources that can not be serialized |
+  | javax.ejb.PostActivate         | stateful                 | restore resources                             |
+
+* Web Service Endpoint Interface				      :@EJB3:
+  Web service endpoint interface is known as SEI. The ability to expose a
+  stateless session bean as a SOAP-based web service is one of the most powerful
+  features of EJB 3. All you need to do to make a bean SOAP accessible is mark a
+  business interface with the @javax.jws.WebService annotation.
+
+* Multiple Business Interface					      :@EJB3:
+  Although it is tempting, but you *cannot* mark the same interface with more
+  than one access type annotation, then interface could be either @Local,
+  @Remote, or @WebService.
+
+* Inject EJB to other tiers					      :@EJB3:
+  It is legal to inject stateful session bean to another stateful session bean
+  and the injected EJB will be automatically removed when the EJB contains it is
+  removed.
+
+  But you must not inject a stateful session bean into a stateless object, such
+  as a stateless session bean or servlet that may be shared by multiple
+  concurrent clients. 
+
+* Passivating and Removing beans				      :@EJB3:
+  The rules for passivation are generally implementation specific. Improper use
+  of passivation policies(when passivition configuration is an option) may cause
+  performance problems. You have to check the documentation for your EJB
+  container and appropriately set passivation rules.
+
 
 * Org Configuration
 #+STARTUP: hidestars
-#+TAGS: show
+#+TAGS: @EJB3 @Ant @AOP
 #+TAGS: @DataType @Task
