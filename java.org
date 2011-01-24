@@ -101,6 +101,151 @@ must support a high degree of concurrency safely and rebostly.
   performance problems. You have to check the documentation for your EJB
   container and appropriately set passivation rules.
 
+* The role of Messaging						       :@JMS:
+  - Messaging is widely used to solve reliability and scalability issues.
+  - Heterogeneous integration is one primary area where messaging plays a key role.
+* The advantage of messaging					       :@JMS:
+  - heterogeneous integration 
+  - reduce system bottlenecks
+  - increase scalability
+  - increase end user productivity
+  - architecture flexibility and agility
+
+* Two kinds of messaging
+  1. Point-to-Point
+     The point-to-point messaging model allows JMS clients to send and receive
+     messages both synchronously and asynchronously via virtual channels known
+     as queues. The point-to-point messaging model has traditionally been a
+     pull-based or polling-based model, where messages are requested from the
+     queue instead of being pushed to the client automatically.
+  2. Publish-and-Subscribe
+     In the publish-and-subscribe model, messages are published to a virtual
+     channel called a topic. Unlike the point-to-point model, message published
+     to a topic using the publish-and-subscribe model can be received by
+     multiple subscribers. The publish-and-subscribe messaging model is by and
+     large a push-based model, where message are automatically broadcast to
+     consumers without them having to request or poll the topic for new
+     messages.
+
+* JMS session
+  In JMS, the Session object holds the transactional unit of work for messaging,
+  not the Connection object. This is different from JDBC, where the Connection
+  object holds the transactional unit of work. This means that when using JMS,
+  an application will typically have only a single /Connection/ object but will
+  have a pool of /Session/ objects.
+
+* Service-Oriented Architecture					       :@SOA:
+  Service-Oriented Architecture(SOA) describes an architecture style that
+  defines business services that are abstracted from the corresponding
+  enterprise service implementations. SOA has given rise to a new breed of
+  middleware known as an Enterprise Service Bus, or ESB.
+
+* RPC								       :@RPC:
+  RPC attempts to mimic the behavior of a system that runs in one process. When
+  a remote procedure is invoked, the caller is blocked until the procedure
+  completes ans returns control to the caller. The synchronized nature of RPC
+  tightly couples the client to the server.
+
+  It is the synchronized, tightly coupled, interdependent nature of RPC systems
+  that cause entire systems to fail as a result of failures in subsystems. 
+
+* MDB best practice						      :@EJB3:
+  - Choose your messaging models carefully. 
+    You might find that PTP will solve your problem nine times out of ten. But
+    for some broadcasting cases, pub-sub model would be appropriate.
+
+  - Remember modularization
+    Business logic should be decoupled and modularized away from
+    messaging-specific concerns. An excellect practice is to put business logic
+    in session beans and invoke them from the /onMessage/ method.
+
+  - Make good use of message filter
+
+  - Choose message types carefully
+    to XML or not XML
+
+  - Be wary of poison message
+
+  - Configure MDB pool size
+* EJB Proxy							       :EJB3:
+  The container makes beans "special" by acting as a proxy between the client
+  and the actual bean instance. This enables the container to provide EJB
+  services to the client on behalf of the bean instance. 
+
+  For each bean instance, the container automatically generates a proxy called
+  an /EJB object/. The EJB object has access to all the functionality of the
+  container, including the JNDI registry, security, transaction management,
+  thread pools, session management, and pretty much anything else that is
+  necessary to provide EJB service.
+
+* Setter Injection						      :@EJB3:
+  Other than field injection, you may also use setter injection that provide
+  injeciton on a setter method. In this way, Injection will happen to the
+  paramter of setter method. There are two benifits according to "EJB 3 in
+  Action":
+  
+  1. It is easier to unit-test by invoking the public setter method from a
+     testing framework.
+
+  2. It is easier to put initialization code in the setter method.
+
+* Multiple interceptors, multi-level interceptors		      :@EJB3:
+  If you specified default, class-, and method-level interceptor, then they will
+  be executed in the order:
+
+  Default Interceptor -> Class Interceptor -> Method Interceptor
+
+  If more than one interceptor is applied at any given level, then they are
+  executed in the order which they are specified.
+
+  The only way to alter this execution order is to use the /interceptor-order/
+  element in the deployment descriptor; there are no annotation for changing
+  interceptor order. 
+
+* Disable interceptor						      :@EJB3:
+  - /@javax.interceptor.ExcludeDefaultInterceptor/ annotation ::
+    disable default interceptor.
+
+  - /@javax.interceptor.ExcludeClassInterceptor/ annotation ::
+    disable class interceptor.
+
+* Interceptor and Exceptions
+  If a business method interceptor throws an exception before invoking the
+  proceed method, the processing of other interceptors in the invocation chain
+  and the target business method will be terminated.
+
+* Lifecycle callback methods in the interceptor class
+  Lifecycle callback defined in an interceptor class are known as /lifecycle
+  callback interceptors/ or /lifecycle callback listeners/. When the target bean
+  transition lifecycles, annotated methods in the interceptor class are
+  triggered.
+
+  Note that a bean can have the same lifecycle callbacks both in the bean itself
+  as well as in one or more interceptors. That is the whole point of calling the
+  /InvocationContext.proceed/ method in lifecycle interceptor methods as in the
+  resource logger code.
+
+* Timers
+  EJB 3 timer service allows you to specify a method that is automatically
+  invoked after a specified interval of time. 
+
+  We can only use timers in stateless session beans and MDBs because their
+  asynchronous, stateless nature. However, unlike stateless session bean and
+  MDBs, Timers are persistence and can survive a container crash or
+  restart. Timers are also *transactional*, that is, a transaction failure in a
+  timeout method rolls back the action taken by the timer.
+
+* Transactions
+  In the most basic terms, a /transaction/ is a grouping of tasks that must be
+  processed as an inseparable unit. 
+
+  In addiion to the *all-or-nothing* value proposition, transaction must
+  guarentee a degree of reliability and robustness. 
+
+  A successful transaction is committed, meaning its result are made permanent,
+  whereas a failed transaction is rolled back, as if it nerver happened.
+
+
 
 * Org Configuration
 #+STARTUP: hidestars
