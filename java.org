@@ -225,7 +225,7 @@ must support a high degree of concurrency safely and rebostly.
   /InvocationContext.proceed/ method in lifecycle interceptor methods as in the
   resource logger code.
 
-* Timers
+* Timers							      :@EJB3:
   EJB 3 timer service allows you to specify a method that is automatically
   invoked after a specified interval of time. 
 
@@ -235,7 +235,7 @@ must support a high degree of concurrency safely and rebostly.
   restart. Timers are also *transactional*, that is, a transaction failure in a
   timeout method rolls back the action taken by the timer.
 
-* Transactions
+* Transactions							      :@EJB3:
   In the most basic terms, a /transaction/ is a grouping of tasks that must be
   processed as an inseparable unit. 
 
@@ -246,6 +246,47 @@ must support a high degree of concurrency safely and rebostly.
   whereas a failed transaction is rolled back, as if it nerver happened.
 
 
+* /setRollbackOnly/ and /getRollbackOnly/			      :@EJB3:
+  The /setRollbackOnly/ and /getRollbackOnly/ methods can only be invoked in an
+  EJB using CMT with these transaction attributes: REQUIRED, REQUIRED_NEW, or
+  MANDATORY. Because they can only be invoked in a situation it is guaranteed
+  that there is CMT. Otherwise, the contianer will throw an
+  /IllegalStateException/.
+
+* Transaction and Exception					      :@EJB3:
+  By default, all checked exception except for /java.rmi.RemoteException/ are
+  assumed to be application exceptions that will cause rollback. On the other
+  hand, all exceptions that inherit from either java.rmi.RemoteExceptions or
+  java.lang.RuntimeException are assumed to be system exception. In EJB, it is
+  not assumed that system exceptions are expected by the client. When
+  encountered, such exceptions are not passed to the client as is but are
+  wrapped in a javax.ejb.EJBException instead.
+
+* UserTrasaction Interface
+  The /UserTrasaction/ interface encapsulates the basic functionality provided
+  by a Java EE transaction manager. 
+
+* Transaction apply to transactional resources			      :@EJB3:
+  Transactions apply to transactional resources, the Java EE specification
+  recognizaing three types of transactional resources: JDBC databases, JMS
+  destinations, and "other transactional services accessed through JCA"
+
+  state-variable and static variables are not transactional resources. File
+  system is neither not transactional resource, unless you're writting to the
+  file system through JCA connector.
+
+* Authentication and Authorization				      :@EJB3:
+  Securing an application involves two primary functions: authentication and
+  authorization. 
+
+** Authentication
+   Authentication is the process of verifying user identify. By authentication
+   yourself, you prove that you are who you say you are.
+
+** Authorization
+   Authorization is the process of determining whether a user has access to a
+   particular resource or task, and it comes into play once a user is
+   authenticated. 
 
 * Org Configuration
 #+STARTUP: hidestars
