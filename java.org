@@ -288,6 +288,39 @@ must support a high degree of concurrency safely and rebostly.
    particular resource or task, and it comes into play once a user is
    authenticated. 
 
+* Groups and Roles						      :@EJB3:
+  It's impossible for you to code for the specific group names a customer's
+  system administrator will choose. Neither should you care about groups. What
+  you do care about is what role a particular in a group plays for your
+  application.
+
+  [So roles are associated with groups here]
+
+* EJB 3 and Java EE security
+  Java EE security is largely based on the Java Authentication and Authorization
+  Service (JAAS) API. JAAS essentially separates the authentication system from
+  the Java EE application by using well-defined, pluggable API.
+  
+  The Java EE application need only know how to talk to the JAAS API. The JAAS
+  API, in contrast, knows how to talk to underlying authentication systems like
+  Lightweight Directory Access Protocol(LDAP), such as Microsoft Active
+  Directory or Oracle Internet Directory(OID) using a vendor plug-in. As a
+  result, you can easily swap betwen anthetication systems simply by swapping
+  JAAS plug-ins without changing any code.
+
+* Declare autheticated roles
+  There are many ways to declare autheticated roles:
+  1. By using /@DeclareRoles/ annotation at either the method or the class level
+     and consists of an array of role names.
+  2. Sepcify roles for the entire enterprise application or EJB module through
+     deployment descriptors.
+  3. If we never declare roles, the container will automatically build a list of
+     roles by insepcting the /@RoleAllowed/ annotation. 
+
+     When the application is deployed, the local system admnistrator must map
+     each role to groups defined in the runtime security environment.
+
+* 
 * Org Configuration
 #+STARTUP: hidestars
 #+TAGS: @EJB3 @Ant @AOP
