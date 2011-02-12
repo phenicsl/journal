@@ -1,5 +1,28 @@
+* Asynchronous ICE						       :@ICE:
+  Ice is inherently an asynchronous middleware platform that simulates
+  synchronous behavior for the benifit of applications. When an Ice application
+  makes a synchronous twoway invocation on a proxy for a remote object, the
+  operation's in parameters are marshaled into a message that is written to a
+  transport, and the calling thread is blocked in order to simulate a
+  synchronous method call.
+  
+  A programmer indicates a desire to use an asynchronous model(AMI, AMD, or
+  both) by annotating Slice definition with metadata. 
 
-* 
+  Synchronous invocation methods are always generated in a proxy; specifying AMI
+  annotation merely adds synchronous invocation methods. 
+
+* Asynchronous Method Dispath (AMD)
+  Asynchronous Method Dispath (AMD), the server-side equivalent of AMI,
+  addresses this scalability issue. Using AMD, a server can receive a request
+  but then suspend its processing in order to release the dispatch thread as
+  soon as possible. When processing resumes and the results are available, the
+  server sends a response explicitly using a callback object provided by the Ice
+  runtime. AMD is transparent to client.
+
+  In practical terms, an AMD operation typically queues the request data. In
+  this way, the server minimizes the use of dispatch threads and become capable
+  of efficiently supporting thousands of simultaneous clients.
 
 * Google Code with Mercurial
 ** Google Code
@@ -15,4 +38,4 @@
   
 * Org Configuration
 #+STARTUP: hidestars
-#+TAGS: show
+#+TAGS: @Mercurial @ICE
