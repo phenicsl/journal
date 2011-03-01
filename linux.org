@@ -152,7 +152,11 @@ sudo fc-cache -fv
     mount -av
 #+END_SRC
     
-    
+** Use mplayer to play iso DVD image				   :@mplayer:
+#+BEGIN_SRC sh
+     sudo mount -t iso9660 x.iso /path/to/mount/point -o loop
+     mplayer dvd://1 -dvd-device /path/to/mount/point
+#+END_SRC   
 * Programming
 ** Unix Network Programming
 *** head files
