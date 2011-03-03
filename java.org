@@ -320,8 +320,177 @@ must support a high degree of concurrency safely and rebostly.
      When the application is deployed, the local system admnistrator must map
      each role to groups defined in the runtime security environment.
 
-* 
+* Persistence Archive						      :@EJB3:
+  Many developer think a separate persistence module is a bad idea because
+  entities are supported both outside and inside the container. Considering that
+  persistence is inherently a part of any enterprise application, it makes sense
+  to support packaging entities with most module types, instead of introducing a
+  new module type specialized for packaging entites.
+* J2EE archives
+  | Type    | Descriptor             | Description                             |
+  |---------+------------------------+-----------------------------------------|
+  | CAR     | application-client.xml | Thick java client for EJBs              |
+  |         |                        |                                         |
+  | EAR     | application.xml        | Toplevel enterprise application archive |
+  |         |                        |                                         |
+  | EJB-JAR | ejb-jar.xml            | EJB archive, contain all kinds of beans |
+  |         |                        | may contain an persistent.xml file if   |
+  |         |                        | There is any persistence entity         |
+  |         |                        |                                         |
+  | RAR     | ra.xml                 | Resource adapter archive                |
+  |         |                        |                                         |
+  | WAR     | web.xml                | Web application archive                 |
+
+* Java EE 5 Automatic Deployment
+  Java EE 5 made the deployment descriptor optional, even in the EAR. This is a
+  departure from previous version of Java EE, where it was mandatory. The Java
+  EE 5.0-compliant application servers deploy by performing automatic detection
+  based on a standard naming convention or reding the content of archives; 
+
+* Java EE Class Loader						      :@EJB3:
+  There is no Java EE specification provides a standard for class loading, and
+  each application server implements class loader in whatever way seems best to
+  the vendor. 
+
+  Basically, application server uses a EAR class loader to load all JARs in the
+  /lib/ directory that shared between each modules. EJB class loader loads EJBs,
+  and it is a child class of EAR class loader, so all classes loaded by EJB
+  class loader is visible to EJB classes. The classes loaded by EJB class loader
+  are typically visible to the web module in most containers because the WAR
+  class loader is a child of EJB class loader.
+
+* Helper Classes Visibility					      :@EJB3:
+  - To make helper classes be visible to all modules in the EAR module, just
+    package thme in the lib directory which will be automatically visible to all
+    modules.
+
+  - If you want to limit the visibility to only a specific EJB-JAR or WAR
+    module, you can create an entry in the /Manifest.mf/ file of the module that
+    contains a /class-path/ attribute to the JAR file.
+  
+* Exposing the persistence module				      :@EJB3:
+  With EJB3, entities can be used inside either the EJB or web container, or in
+  a Java SE application. Thus, entities may be packaged in a standard Java EE
+  module such as an EJB-JAR, WAR, or JAR file in the root of the EAR module or
+  as a library module in an EAR. When using entities in your applications, you
+  have to package entity classes into a Java EE module such as an EJB-JAR or WAR
+  of simple JAR files, with a simple deployment descriptor named
+  /persistence.xml/.
+
+  If you are using entities within an EJB module, then the EJB classes and
+  entities need to be packaged together in the same EJB module. Therefore, the
+  EJB-JAR module will contain a persistence.xml file to designate that the
+  module contains one or more persistence units. 
+
+* Design Pattern and J2EE					      :@EBJ3:
+  Design patterns are generally accepted solutions that typically work for
+  common problems. They help avoid "Rediscovering the Wheel Syndrome," and offer
+  advice for when and how they should be used. Sun's Java Blueprints Program
+  provides a catalog of core design patterns for building Java EE
+  applications.
+
+
+* Domain Model							       :@JPA:
+  A /domain model/ is a conceptal image of the problem your system is trying to
+  solve. Literally , it is made up of the objects in the "system universe" and
+  the relationships or associations between them.
+
+  The critial thing to remmember is that the domain model describes the objects
+  and how the objects might relate to each other, but not how a system acts on
+  the objects.
+
+* Domain Model Actors
+  Domain modeling theory identifies four domain model "actors": 
+  - objects
+  - relationship 
+  - the multiplicity of relationships
+  - the optionality of relationships
+
+* Rich vs. Anemic Domain Models					       :@JPA:
+  - Anemic domain objects contain only attributes but not behaviors.
+  - Rich domain objects contain both attributes and behaviors
+
+* Inheritance and Persistence					       :@JPA:
+  If parent class is annotated with @Entity, then all the inherited fields will
+  be persistented in an Entity child class. But if parent class is not an
+  entity, then the value of the inherited properties will be discarded when
+  entity child class is persisted. 
+
+* Field Based Access vs. Property Based Access			       :@JPA:
+  + field based access ::
+    - defining O/R mapping using fields or instance variable of entity.
+    - put annotation on field 
+
+  + property based access ::
+    - defining O/R mapping using getter/setter method
+    - put annotation on getter method
+
+  Annotation used with a setter are ignored by the persistence provider for
+  property-based access
+
+  One caveat in choosing between field and property based persistence is that
+  both are one-way streets; you can't mix and match access types in the same
+  entity or in any entity inthe POJO hierarchy. 
+
+
+* Transient Field						       :@JPA:
+  You can stop an entity property from being persisted by marking the field or
+  getter with the /@Transient/ annotation. 
+
+  Note that defining a field with the transient modifier as we've done with
+  generatedName has the same effect as the /@Transient/ annotation.
+
+* Entity Identity
+  Every entity of the domain model must be uniquely identifiable. This
+  requirement is due partly to the fact that at some point entities must be
+  persisted into a uniquely identifiable row in a database table.
+
+** The @Id annotation
+   /javax.persistence.Id/ annotation is the simplest way of telling the
+   persistence provider where the entity identity is stored. The /@Id/
+   annotation marks a field or property as identity for an entity. 
+
+   Use /@Id/ can only identify one field or property as the identity, if you
+   want to sepcify multiple fields or properties as identity, then you probably
+   have to use /@IdClass/ or /@EmbeddedId/
+
+** The /@IdClass/ annotation
+   In effect, the @IdClass annotation enables you to use more than one /@Id/
+   annotation in a sensible way. 
+
+   By using /@IdClass/, you may specify multiple /@Id/ field or properties and
+   annotate the class with /@IdClass/ to specify how to compare multiple
+   identity fields using an external /@IdClass/.
+
+   
+
+** The /@EmbeddedId/
+   Using the /@EmbeddedId/ annotation is like moving the /IdClass/ right into
+   your entity and using the identity fields nested inside it to store entity
+   data. You are not allowed to use /Id/ or /IdClass/ in conjunction with
+   /EmbeddedId/.
+
+* The /@Embeddable/ annotation
+  The /@Embeedable/ annotation is used to designate persistent object that need
+  not have an identify of their own. This is because Embeddable objects are
+  identified by the entity objects they are nested inside and never persistend
+  or accessed on their own.
+
+  EJB 3 API does not support nested embedded objects. 
+
+* Entity Relationships
+  | type of relationship | annotation  |
+  |----------------------+-------------|
+  | one-to-one           | @OneToOne   |
+  | one-to-many          | @OneToMany  |
+  | many-to-one          | @ManyToOne  |
+  | many-to-many         | @ManyToMany |
+
+** @OneToOne
+   The /@OneToOne/ annotation is used to mark uni- and bidirectional one-to-one
+   relationships. Although 
 * Org Configuration
 #+STARTUP: hidestars
 #+TAGS: @EJB3 @Ant @AOP
 #+TAGS: @DataType @Task
+  
