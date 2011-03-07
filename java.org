@@ -488,7 +488,340 @@ must support a high degree of concurrency safely and rebostly.
 
 ** @OneToOne
    The /@OneToOne/ annotation is used to mark uni- and bidirectional one-to-one
-   relationships. Although 
+   relationships. 
+   
+   the /mappedBy/ specification tells the container that the "owning" side of
+   the relationship. The concept of a /relationship owner/ doesn't originate
+   from domain modeling. It exists as a convenience to define the database
+   mapping for a relationship only once instead of repeating the same mapping
+   for both direction of a relationship.
+
+* Annotation Concept and Terminalogy				:@Annotation:
+  - annotation ::
+    An annotation associates arbitrary information or metadata with a java
+    program element. Annotation uses new syntax introduced in Java 5.0 and
+    behave like modification such as /public/ or /final/. 
+
+  - annotation type ::
+    The name of an annotation as well as the names, types, and default values of
+    its members are defined by the /annotation type/. An annotation type is
+    essentially a java interface with some restriction on its members and some
+    new syntax used in its declaration. 
+
+  - annotation member ::
+    The members of an annotation are declared in an annotation type as
+    no-argument methods. The method name and return type define the name and
+    type of the member. A special default syntax allows the declaration of a
+    default value for any annotation member. 
+
+    This is really a very bad design of semantic.
+
+  - meta-annotation ::
+    A meta-annotatoin is an annotation applied to the declaration of an
+    annotation type.
+
+  - retention ::
+    The retention of an annotation specifies how long the information contained
+    in the annotation is retained. 
+
+* Defining Annotation Types
+  An annotatoin type is a interface, but it is not a normal one. An annotation
+  type differs from a normal interface in the following ways:
+  - defined with @interface. An @interface declaration 
+
+  - the method of annotation should be defined with no arguments and may not
+    throw exceptions.
+
+  - the return value of annotation methods may be a primitive type, a String, a
+    Class, an enumeration type, another annotation type, or a single-dimensional
+    arry of one of those types
+
+  - any method of an annotation type may be followed by the keyword /default/
+    and a value compatible with the return value of the method.This strange new
+    syntax specifies the default value of the annotation member that corresponds
+    to the method.
+
+  - annotation types and their methods may not have type parameter. The only
+    valid use of generics in annotation type is for methods whose return type is
+    /Class/. These methods may use a bounded wildcard to specify a constraint on
+    the returned class.
+
+  - annotations may include constant definitions and static member types such as
+    enumerated type definitions. 
+
+  - Annotation types may also be implemented or extended just as normal
+    interfaces are. But the classes or interfaces that result from doing this
+    are not themselves annotation types. 
+
+* Meta Annotations						:@Annotation:
+  - Target ::
+    The /Target/ meta-annotation type specifies the "targets" for an annotation
+    tpe. That is, it specifies which program elements may have annotations of
+    that type. 
+
+    The /Target/ meta-annotation type has a single member named /value/. The
+    type of this member is /java.lang.annotation.ElementType[].ElementType/ is
+    an enumerated type whose enumerated values represent program elements that
+    can be annotated, those values could be:
+
+    1. ANNOTATION_TYPE
+    2. CONSTRUCTOR
+    3. FIELD
+    4. LOCAL_VARIABLE
+    5. METHOD
+    6. PACKGE
+    7. PARAMETER
+    8. TYPE
+
+  - Retension ::
+    Specify the retension of the annotation, the /Retension/ meta-annotation
+    type has be single member named /value/ whose type is /RetentionPolicy/, the
+    value could be :
+    
+    1. CLASS
+    2. RUNTIME
+    3. SOURCE
+
+  - Documented ::
+    /Documented/ is a meta-annotation type used to specify that annotations of
+    some other type should be considered part of the public API of the annotated
+    program elment and should therefore be documented by tools like
+    javadoc. /Documented/ is a marker annotation: it has no members. 
+
+  - Inherited ::
+    Indicate that the annotation is a inherited one, that is, if the annotation
+    is used to a class, then the annotation applies to subclasses of that class
+    as well.
+
+    Note that /@Inherited/ annotation types are inherited only by subclasses of
+    an annotation class. Classes do not inherit annotations from interfaces they
+    implement, and methods do not inherit annotation from methods they
+    override. 
+
+* Object-relational mapping
+  In effect, ORM speicfies how sets of Java objects, including references
+  between them, are mapped to rows and columns in database tables. 
+
+  - One-to-one mapping
+    Storing data into two tables and use foreign key reference does not make
+    complete sense in relational world. It would be better to annotate class to
+    be /embedded/ and let retional database to merge two tables into one.
+
+  - One-to-many mapping
+    The relational primary-key/foreign-key mechanism is ideally suited for a
+    parent-child one-to-many relationship between tables. 
+
+  - Many-to-many mapping
+    The only way to implement many-to-many relationships is by breaking them
+    down into two one-to-many relationsihps. 
+
+    An /association/ or /intersection/ table will be involed which contains only
+    two columns to mapping the primary keys for the two sides of many-to-many
+    relationship. 
+
+* Enum in Java 5.0						       :Language:
+  Enum is a new type supported in Java 5.0. Basically, it performs as the the
+  ordinary enumeration types in other languages to define certain number of
+  values for a certain type. Java 5.0 also add supporting for the enum type in
+  /swith/ statement. 
+
+  But enum is more complex in java, it could actually be considered as a class,
+  and each value defined in this enum could be considered as singleton instance
+  of classes inherited from the enum class, or you may consider it as singlton
+  class in Scala language. So you could define class body for the enum type and
+  also for all values. As following example:
+#+BEGIN_SRC java
+  enum ArithmeticOperator {
+      ADD {
+          double apply(double x, double y) {
+              return x + y;
+          }
+          
+      }, 
+      SUBTRACT {
+         double apply(double x, double y) {
+              return x - y;
+          }        
+      };
+  
+      double apply(double x, double y) {
+          throw new AssesionError(this);
+      }
+  }
+#+END_SRC
+
+* Mapping CLOBs and BLOBs					       :@JPA:
+  Whether a field or property designated /@Lob/ is a CLOB or a BLOB is
+  determined by its type. If the data is of type /char[]/ or /String/, the
+  persistence provider maps the data to a /CLOB/ column. Otherwise, the column
+  is mapped as a /BLOB/. 
+
+* Mapping temporal types					       :@JPA:
+  Most databases support a few different temporal data types with different
+  granularity levels corresponding to DATE(storing day, month, and year),
+  TIME(storing just time and not day, month, or year) and TIMESTAMP(storing
+  time, day, month and year). The /@Temporal annotation specifies which of these
+  data types we want to map a /java.util.Date/ or /java.util.Calendar/
+  persistent data type to.
+
+* Mapping an entity to multiple tables				       :@JPA:
+  /@SecondaryTable/ is used to map an entity to multple tables. 
+
+  /pkJoinColumns/ element in /@SecondaryTable/ annotation is used to specify the
+  relationship between those tables. 
+
+  We may use the /@SecondaryTables/ annotation more than once for the same entity.
+  
+* Generating Primary Keys					       :@JPA:
+  Three strategies are supported via the /@GeneratedValue/ annotation to
+  support primary key generation
+
+  - Identity columns ::
+    Some databases support identify column which is a column to have unique
+    value, the value of this column may be generated by the database or be
+    specified by the user when rows are created. 
+
+    /GenerationType.IDENTITY/ value could be used for the /startegy/ key to
+    specify the generation strategy to be identity:
+#+BEGIN_SRC java
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name="USER_ID")
+    protected Long userId;    
+#+END_SRC
+    
+  - Database Sequence ::
+    Database sequence is supported some databases. To use a database sequence to
+    generate primary key, first you need to create the sequence in the
+    database. Then you could specify this sequence with /@SequenceGenerator/
+    annotation. And finally you may use the sequence in the /@GeneratedValue/
+    annotation as following:
+#+BEGIN_SRC java
+    // specify the sequence
+    @SequenceGenerator(name="USER_SEQUENCE_GENERATOR",
+       sequenceName="USER_SEQUENCE",
+       initialValue=1, allocationSize=10)
+    
+    // use the sequence as the primary generator
+    @Id
+    @GeneratedValue(strategy=GenerationType.SEQUENCE,
+                    generator="USER_SEQUNECE_GENERATOR")
+    @Column(name="USER_ID")
+    protected Long userId;
+#+END_SRC
+    
+  - Sequence Table ::
+    As database sequence, sequence table is also a method for sequence
+    generator that supported by database such as oracle. To use a sequence table
+    as primary key generator, you also have to create the sequence table in the
+    database firstly. 
+
+#+BEGIN_SRC java
+    @TableGenerator (name="USER_TABLE_GENERATOR",
+      table="SEQUENCE_GENERATOR_TABLE",
+      pkColumnName="SEQUENCE_NAME",
+      valueColumnName="SEQUENCE_VALUE",
+      pkColumnValue="USER_SEQUENCE")
+
+   @Id
+   @GeneratedValue(strategy=GenerationType.TABLE,
+     generator="USER_TABLE_GENERATOR")
+   @Column(name="USER_ID")
+   protected Long userId;
+#+END_SRC    
+
+  - Default primary key generation strategy ::
+    You may also specify the strategy to be /AUTO/ and let the persistence
+    provider decide the best strategy for the underlying database. 
+#+BEGIN_SRC java
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    @Column(name="USER_ID")
+    protected Long userId;
+
+#+END_SRC
+    
+* Mapping Entity Relationships					       :@JPA:
+** Mapping one-to-one relationship
+   one-to-one relationship are mapped using primary/foreign key associations. 
+
+   - Using @JoinColumn ::
+     If the underlying table for the referencing entity is the one containing
+     the foreign  key to which the referenced "child" entity is mapped, you can
+     map the relationship using the /@JoinColumn/ annotation.
+     
+     In /@JoinColumn/ annotation, the /referenceColumnName/ element specifies
+     the name of the primary key or a unique key the foreign key refers to. The
+     default value of /referenceColumnName/ is the column containing the
+     identity of the referenced entity.
+
+     If we have a bidrectional one-to-one relationship, then the entity in the
+     inverse side of the relationship will contain the mappedBy
+     element. /mappedBy/ element identifies the name of the association field in
+     the owning side of the relationship. 
+
+ - Using /@PrimaryKeyJoinColumn/ ::
+   In the more likely case that the foreign key reference exists in the table to
+   which the referenced entity is mapped, the /@PrimaryKeyJoinColumn/ would be
+   used instead. 
+
+   In this case, we will have a foreign key in the referenced table to refer to
+   the primary key of the master table. We may use /@PrimaryKeyJoinColumn/ on
+   master table's primary key field and set /referencedColumnName/ to be the
+   foriegn key field of referenced table.
+
+** One-to-many and many-to-one
+   In the one-to-many and many-to-one relationship, we have multiple reference
+   in the object on the "One" side to "Many" side and also one reference in the
+   "Many" side object to "One" side. 
+
+   So we may use the /mappedBy/ in the one-to-may relationship to emphasis the
+   master of the relationship. And we also use /@JoinColumn/ in the many-to-one
+   relationship to specify how foreign key and primary key are mapped. 
+
+   If you do not specify /mappedBy/ element, then persistence provider will
+   treate it as a undirectional relationship, but this would not be possible if
+   the one-to-many relationship reference were unidirectional since there would
+   be no owner of the relationship to refer to.
+
+   JPA does not support unidirectional one-to-many relationships using a foreign
+   key on the target table. Unidirectional one-to-many relationship will need to
+   involve in maintaining another table.
+
+** Many-to-many
+   Join table allows you to indirectly match up primary keys from either side of
+   the relationshion by storing arbitrary pairs of foreign keys in a row.
+   
+   A /@JoinTable/ annotation may contain two /@JoinColumns/ to specify how
+   primary keys in object tables could be mapped to foreign keys in join
+   table. And you may use a /mappedBy/ element to reduce redundant mapping.
+
+   If there is no /mappedBy/ element, then it will become a unidirectional
+   many-to-many mapping.
+
+* Mapping Inheritence						       :@JPA:
+  There are several ways to map inheritance:
+  1. Single table
+  2. joined tables
+  3. table per class
+
+** Single table strategy
+   In single-table strategy, all classes in the inheritence hierarchy are mapped
+   to a single table. This means that the single table will contain a superset
+   of all data stored  in the class hierarchy. Different objects in the OO
+   hierarchy are identified using a special column called a /discriminator/
+   column. 
+   
+** Joined-tables strategy
+   Joined-tables inheritance strategy uses one-to-one relationships to modle OO
+   inehritance. The master table stores only data that is common to all child
+   classes, different tables are created for each descedent class type, and
+   foreign -> primary key mapping is created between classes to map a specific
+   descedent object to its own common data. The discriminator column is also
+   used to easily identify the object type.
+
+** Table-per-class strategy
+   
 * Org Configuration
 #+STARTUP: hidestars
 #+TAGS: @EJB3 @Ant @AOP
