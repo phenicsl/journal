@@ -56,7 +56,7 @@ sudo fc-cache -fv
     stty -ixon
 #+END_SRC
 
-** Parse dependency on Debian/GNU Linux
+** Parse dependency on Debian/GNU Linux					:apt:
     Use apt-rdepends to get dependencies. Use bash utilities to filter
     reduplicate informations:
 #+BEGIN_SRC sh
@@ -71,9 +71,9 @@ sudo fc-cache -fv
 
      What a great world in Debian/GNU Linux.
 
-** Tools to manage startup services
+** Tools to manage startup services				       :misc:
    sysv-rc-conf
-** Wget usage
+** Wget usage							       :wget:
 *** How mirror a sit with wget?
 #+BEGIN_SRC sh
     wget --mirror -k URL
@@ -98,12 +98,12 @@ sudo fc-cache -fv
      so on.  When -nc is specified, this behavior is suppressed, and Wget will
      refuse to download newer copies of file
 
-** Expr
+** Expr								       :expr:
    /expr/ is a command line expression evaluator. An importance note about expr
    is taht arguments must be separated by spaces. otherwise it will no be
    evaluated. For example, command "expr 3+5" will just return "3+5" as result,
    but "expr 3 + 5" will return 8 as expected.
-** Double Parentheses Construct
+** Double Parentheses Construct					       :bash:
     Similar to the let command, the ((...)) construct premits arithmetic
     expansion and evaluation. It also allows C-type manipulation of variables in
     Bash. for example, following command could compute the number of line of all
@@ -117,7 +117,7 @@ sudo fc-cache -fv
     echo $num			# print result
 #+END_SRC
     
-** Install-info
+** Install-info							       :info:
    install-info creates, updates or remove entries in the Info dir file. Before
    doing any operation, be sure your info file is reside in the same directory
    as the dir file. Dir file could be specified with the --infodir option, The
@@ -133,7 +133,7 @@ sudo fc-cache -fv
 *** Add info
     # install-info org
     
-** Make Emacs support 256 colors in terminal
+** Make Emacs support 256 colors in terminal			      :emacs:
 #+BEGIN_SRC sh
     sudo apt-get install ncurses-term
     export TERM=xterm-256color
@@ -157,6 +157,22 @@ sudo fc-cache -fv
      sudo mount -t iso9660 x.iso /path/to/mount/point -o loop
      mplayer dvd://1 -dvd-device /path/to/mount/point
 #+END_SRC   
+** use mencoder to convert and merge media
+   To copy one part of the media to another file
+#+BEGIN_SRC sh
+   mencoder -oac copy -ovc copy -SS HH:MM:SS -endpos HH:MM:SS <SRC> -o <DST>
+#+END_SRC
+   Here, /-endpos/ option specifies the length of media to copy in time
+   duration. 
+
+   To convert media form one type 
+   
+** find empty directories					       :find:
+#+BEGIN_SRC sh
+   find ./ -type d -empty -print
+#+END_SRC   
+   
+     
 * Programming
 ** Unix Network Programming
 *** head files
@@ -475,6 +491,6 @@ struct sockaddr_in {
     - >1 :: specifies the number of descriptor that are ready.
 	   
 
-
+	    
 * Org Configuration
 #+STARTUP: hidestars
