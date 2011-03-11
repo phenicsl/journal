@@ -822,6 +822,61 @@ must support a high degree of concurrency safely and rebostly.
 
 ** Table-per-class strategy
    
+* Methods to manipulate entities				       :@JPA:
+  - persist ::
+    persist attach a detached entity into EntityManaer's context. 
+    
+  - merge ::
+    merge update the database with the data held in the entity and attach the
+    entity to EntityManager's context.
+
+  - refresh ::
+    refresh resets the entity's state with data from the database.
+
+* Detach entity							       :@JPA:
+  The usual way entities become detached is a little subtler. Essentially, an
+  attached entity becomes detached as soon as it goes out of the /EntityManager/
+  context's scope. 
+
+  Entity instances also become detached through cloning or serialization. This
+  is because the EntityManager quite literally keeps track of entities through
+  Java object references.
+  
+  
+* Persistence context						       :@JPA:
+  Although we perform persistence operations by invoking methods on the
+  /EntityManager/, the /EntityManager/ itself does not directly keep track of
+  the lifecycle of an individual entity. /EntityManager/ delegates the task of
+  managing entity state to the currently available persistence context.
+
+  A persistence context is a self-contained collection of entities managed by an
+  /EntityManager/ during a given persistence scope. 
+
+  There are two different of persistence scopes: transaction and extended.
+
+* Transaction-scoped EntityManager				       :@JPA:
+  An EntityManager associated with a transaction-scoped persistence context is
+  known as a transaction-scoped EntityManager. If a persistence context is under
+  transaction scope, entities attached during a transaction are automatically
+  detached when the transaction ends. 
+
+  Once the persistence context detects that a transaction has either been rolled
+  back or committed, it will detach all managed entities after making suer that
+  all data changes until that point are synchronized with the database.
+
+* Extended EntityManager					       :@JPA:
+  The life span of the extended /EntityManager/ lasts across multiple
+  transactions. An extended EntityManager can only be used with stateful session
+  beans and lasts as long as the bean instance is alive. 
+
+  You are not allowed use extended persistence scope for stateless session beans
+  or MDBs. 
+* Creating EntityManager instance
+  All EntityManager instances injected using the /@PersistenceContext/
+  annotaiton are container managed. This means that the container takes care of
+  the mundane task of looking up, opening, and closing the EntityManager behind
+  the scene. In addition, unless otherwise specified, injected /EntityManager/
+  have *transaction* scope.
 * Org Configuration
 #+STARTUP: hidestars
 #+TAGS: @EJB3 @Ant @AOP
