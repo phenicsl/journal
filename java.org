@@ -871,12 +871,243 @@ must support a high degree of concurrency safely and rebostly.
 
   You are not allowed use extended persistence scope for stateless session beans
   or MDBs. 
-* Creating EntityManager instance
+* Creating EntityManager instance				       :@JPA:
   All EntityManager instances injected using the /@PersistenceContext/
   annotaiton are container managed. This means that the container takes care of
   the mundane task of looking up, opening, and closing the EntityManager behind
   the scene. In addition, unless otherwise specified, injected /EntityManager/
   have *transaction* scope.
+
+  Unlike container-managed /EntityManager/, application-managed EntityManagers
+  do not automatically participate inan enclosing transaction. Instead, they
+  must be asked to join an enclosing JTA transaction by calling the
+  /joinTransaction/ method. 
+
+* Cascading persist operations					       :@JPA:
+  Perhaps surprisingly, it is not the default behavior for JPA to persist
+  related entities. 
+
+* Retriving Entities by Primary Key				      :@JPAA:
+  If an entity instance matching the specified key does not exist in the
+  database, the find method will not throw any exceptions. Instead, the
+  Entity-Manager will return null or an empty entity and your application must
+  handle this situation.
+
+  It is not strictly necessary to call the find method in a transactional
+  context. However, the retrieved entity is detached unless a transaction
+  context is available, so it is generally advisable to call the find method
+  inside a transaction.
+* Deleting Entities						       :@JPA:
+  /remove/ method of /EntityManage/ can only delete *currently attached*
+  entities. If a detached entity is passed to the /remove/ method, it throws an
+  IllegalArgumentException. So we an unattached object is passed in, you may
+  need to call /merge/ firstly to attach the object into persistence context.
+  
+* Controlling updates with flush				       :@JPA:
+  By default, the database flush mode is set to AUTO. This means that the
+  /EntityManager/ performs a flush operation automatically as needed. In
+  general, this occurs at the end of transaction for transaction-scoped
+  EntityManager and when the persistence context is closed for
+  application-managed or extended-scope EntityManager. 
+
+  You can set the flush mode of /EntityManager/ with
+  /EntityManager::setFlushMode/. then it is your responsibility to synchronize
+  entity state with the database before executing a query. 
+
+  In reality, resetting flush mode is often overkill. This is because you can
+  explicitly flush the EntityManager when you need to with /flush/ method in
+  /EntityManager/ class.
+
+* Refreshing Entities						       :@JPA:
+  The /refresh/ operation repopulates entity data from the database. In other
+  words, given an entity instance, the persistence provider matches the entity
+  with a record in the database and resets the entity with retrieved data from
+  the database.
+
+* Default Listener Classes					       :@JPA:
+  For crosscutting concerns like logging or auditing, it is incovenient to have
+  to specify listeners for individual entities. So JPA enables you to specify
+  default entity listeners that receive callbacks from all entities in a
+  persistence unit. 
+
+* Listener class execution order				       :@JPA:
+  If an entity has default listeners, entity class-specific listeners, and
+  inherited superclass listeners, then the executio order of those listeners is:
+
+  Default Entity Listener -> Listeners on Superclass -> Listeners on Subclass
+
+
+* @JoinColumn and @PrimaryKey					       :@JPA:
+  In One-to-One relationship, there are two places that foreign key may
+  exist. 
+
+  - Using @JoinColumn 
+
+    If the foreign key is in the table to which the reference class is
+    mapped. Means the field of the foreign key is in the master class. Then
+    @JoinColumn should be used.
+
+    For example, if we have a User class which defines user information and also
+    a BillingInfo class that contains billing information for a specific
+    user. Then we may have a field in User class reference to a BillingInfo
+    instance. We could be /@JoinColumn/ here to map this relationship:
+#+BEGIN_SRC text
+  @Entity
+  @Table(name="USERS")
+  public class User {
+     @Id
+     @Column(name="USER_ID")
+     protected String userId;
+  
+     @OneToOne
+     @JoinColumn(name="USER_BILLING_ID",
+       referencedColumnName="BILLING_ID", updatable=false)
+     protected BillingInfo billingInfo;        
+  }
+  
+  @Entity
+  @Table(name="BILLING_INFO")
+  public class BillingInfo {
+      @Id
+      @Column(name="BILLING_ID")
+      protected Long billingId;
+  }
+#+END_SRC    
+  
+  Here we specify that field billingInfo is a foreign key reference to the
+  "BILLING_ID" in the BillingInfo class.
+
+  - Using @PrimaryKeyJoinColumn
+    If the foreign key is in the table that referenced class is mapped. Means
+    the field of this foreign key is in the referenced class. Then we should be
+    /@PrimaryKeyJoinColumn/. Also table class User and class BillingInfo as
+    example, we will have:
+#+BEGIN_SRC text
+    @Entity
+    @Table(name="USERS")
+    public class User{
+        @Id
+	@Column(name="USER_ID")
+	protected Long userId;
+
+	@OneToOne
+	@PrimaryKeyJoinColumn(name="USER_ID"
+	  referencedColumnName("BILLING_INFO_ID")
+	protected BillingInfo billingInfo;
+    }
+
+    @Entity
+    @Table(name="BILLING_INFO")
+    public class BillingInfo {
+        @Id
+	@Column(name="BILLING_UESR_ID")
+	protected Long UserId;
+    }
+#+END_SRC
+
+    Here the /referencedColumnName/ of /@PrimaryKeyJoinColumn/ annotation
+    specify the name of the foreign key. If th enames of both the primary key
+    and foreign key columns are the same, you may omit the
+    /referencedColumnName/.
+
+    /@PrimaryKeyJoinColumn/ also could be used to map inheritance
+    relationship. In this cicumstance, we have foreign key in the child table
+    refer to primary key in parent table to fetch common data stored there. We
+    need to specify /@PrimaryKeyJoinColumn/ in child table mapping to indicate
+    the name of primary key.
+
+* Unidirectionl One-to-Many Relationship			       :@JPA:
+  Unidirectional one-to-many is actually not recommended in JPA. If the
+  relationship is bidirectional one-to-many, then you may very easilly map
+  between two objects with /@OneToMany/ in the owner object and /@ManyToOne/ in
+  the owned object plus one /@JoinColumn/ to specify the foreign key. Also take
+  class /User/ and class /BillingInfo/ as example, assume one user may have a
+  list of billing infos, then a bidirectional relationship would be:
+
+#+BEGIN_SRC text
+  @Entity
+  @Table(name="USERS")
+  public class User {
+      @Id
+      @Column(name="USER_ID")
+      protected Long userId;
+
+      // specify mappedBy to indicate the relationship is described by the 
+      // user field in BillingInfo class.
+      @OneToMany(mappedBy="user")
+      protected List<BillingInfo> billingInfoList;
+  }
+
+  @Entity
+  @Table(name="BILLING_INFO")
+  public class BillingInfo {
+      // @JoinColumn.name specify the name of column
+      // @JoinColumn.referencedColumnName specify the column this foreign key
+      //  refer to, which is the USER_ID column in USERS table.
+      @ManyToOne
+      @JoinColumn(name="BILLING_USER_ID"
+          referencedColumnName="USER_ID")
+      protected User user;
+  }
+#+END_SRC  
+
+  But for a unidirectional relationship, although almost all persistence
+  provider already support a simple /@JoinColumn/ description as following:
+
+#+BEGIN_SRC java 
+  @Entity
+  @Table(name="USERS")
+  public class User {
+      @Id
+      @Column(name="USER_ID")
+      protected Long userId;
+
+      // not standard
+      @OneToMany(mappedBy="user")
+      @JoinColumn(name=BILLING_USER_ID")
+      protected List<BillingInfo> billingInfoList;
+  }
+
+  @Entity
+  @Table(name="BILLING_INFO")
+  public class BillingInfo {
+      // no bidirectional
+  }
+#+END_SRC
+  This would work in most presistence provider, but it is not standard in JPA,
+  so not recommended.
+
+  if you really want to use a bidirectional One-to-Many relationship, then you
+  would probably consider /@JoinTable/ as a better solution. /@JoinTable/ in
+  unidirectional /@OneToMany/ is the almost the same as /@JoinTable/ in
+  /@ManyToMany/ relationship, just miss the part in owned object:
+#+BEGIN_SRC java
+  @Entity
+  @Table(name="USERS")
+  public class User {
+      @Id
+      @Column(name="USER_ID")
+      protected Long userId;
+
+      // not standard
+      @OneToMany(mappedBy="user")
+      @JoinTable(name="USER_BILLING_INFO",
+          joinColumns = 
+	    @JoinColumn(name="UB_USER_ID",	    
+                        referencedColumnName="USER_ID"),
+          inverseJoinColumns=
+            @JoinColumn(name="UB_BILLING_INFO_ID",
+                        referencedColumnName="BILLING_INFO_ID")
+      )
+      protected List<BillingInfo> billingInfoList;
+  }
+
+  @Entity
+  @Table(name="BILLING_INFO")
+  public class BillingInfo {
+      // no bidirectional
+  }
+#END_SRC
 * Org Configuration
 #+STARTUP: hidestars
 #+TAGS: @EJB3 @Ant @AOP
