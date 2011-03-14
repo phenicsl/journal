@@ -1108,6 +1108,100 @@ must support a high degree of concurrency safely and rebostly.
       // no bidirectional
   }
 #END_SRC
+
+* Using Join Columns						       :@JPA:
+  In the database, a relationship mapping means that one table has a reference
+  to another table. The database term for a column that refers to a key (usually
+  the primary key) in another table is a /foreign key/ column. In the Java
+  Persistence API we call them /join columns/, and the /@JoinColumn/ annotation
+  is the primary annotation used to configure these types of columns.
+
+  In almost every relationship, independent of source and target sides, one of
+  the two sides is going to have the join column in its table. That side is
+  called the owning side or the owner of the relationship. The side that does
+  not have the join column is called the non-owning or inverse side.
+  
+  Ownership is important for mapping because the physical annotations that
+  define the mapping to the columns in the database are always defined on the
+  owning side of the relationship. If they are not there, then the values are
+  defaulted from the perspective of the attribute on the owning side.
+
+* Unidirectional Many-to-One Relationship			       :@JPA:
+  Defaultly, Many-to-One relationship requires only one /@ManyToOne/
+  annotation on the owning side class. As a example from the book "Pro EJB3,
+  Java Persistence API", we have a class /Employee/ with a reference to class
+  /Department/ that is a Many-to-One relationship.
+
+#+BEGIN_SRC text
+  @Entity
+  @Table(name="EMPLOYEE")  
+  public class Employee {
+  // ...
+  @ManyToOne
+  private Department department;
+  }
+#+END_SRC  
+  
+  Actually, that is all we need to do. When there is no /@JoinColumn/, then
+  persistence provider will use a default column name. 
+
+  /@JoinColumn/ annotation here could be used to specify values for the foreign
+  key relationship.
+#+BEGIN_SRC text
+  @Entity
+  @Table(name="EMPLOYEE")  
+  public class Employee {
+  // ...
+  @ManyToOne
+  @JoinColumn(name="DEPT_ID")
+  private Department department;
+  }
+#+END_SRC  
+  Here, we specify the name of the foreign key to be DEPT_ID.
+
+* Unidirectional One-to-One relationship
+  Just as Many-to-One relationship, One-to-One relationship also use a foreign
+  key(join column) in the database to specify the relationship, so you may use a
+  /@JoinColumn/ annotation to override default values for this join column.
+#+BEGIN_SRC text
+  @Entity
+  @Table(name="EMPLOYEE")  
+  public class Employee {
+  // ...
+  @OneToOne
+  @JoinColumn(name="DEPT_ID")
+  private Department department;
+  }
+#+END_SRC  
+
+* Bidrectional One-to-One Relationship
+  In a bidirectional one-to-one relationship both of the mappings are one-to-one
+  mappings, and either side may be the owner, so the join column may end up
+  being on one side or the other.
+
+  Here is the rules to do the mapping:
+  - The /@JoinColumn/ annotation goes on the mapping of the entity that is
+    managed to the table containing the join column, or the owner of the
+    relationship. This may be on either side of the association
+
+  - The /mappedBy/ element should be specified in the /@OneToOne/ annotation in
+    the entity that does not define a join column, or the inverse side of the
+    relationship. 
+
+* One-to-One Primary Key Mapping
+  If the database table does not have an additional foreign key column in either
+  table and the primary key in one of the table is also the foreign key refering
+  to the other table. Then we should use /@PrimaryKeyJoinColumn/ to specify the
+  One-to-One relationship. 
+
+  We use the /@PrimaryKeyJoinColumn/ in the class which uses its primary key as
+  foreign key to refer to the other class and use the /mappedBy/ attribute in
+  the other class. 
+
+
+
+
+  
 * Org Configuration
 #+STARTUP: hidestars
 #+TAGS: @EJB3 @Ant @AOP
