@@ -1143,7 +1143,7 @@ must support a high degree of concurrency safely and rebostly.
 #+END_SRC  
   
   Actually, that is all we need to do. When there is no /@JoinColumn/, then
-  persistence provider will use a default column name. 
+  persistence provider will use a defaultly generated column name.
 
   /@JoinColumn/ annotation here could be used to specify values for the foreign
   key relationship.
@@ -1198,7 +1198,32 @@ must support a high degree of concurrency safely and rebostly.
   foreign key to refer to the other class and use the /mappedBy/ attribute in
   the other class. 
 
+* One-to-Many Relationship
+  When a source entity has an arbitrary number of target entities stored in its
+  collection, there is no scalable way to store those references in the database
+  table that it maps to. It must, rather, let the tables of the entities in the
+  collection have foreign keys back to the source entity table. This is why the
+  one-to-many association is almost always bidirectional and never the owning
+  side.
 
+  There are two important points to remember when defining bidirectional
+  one-to-many(or many-to-one) relationships:
+  1. The many-to-one side is the owning side, so the join column is defined on
+     that side.
+  2. The one-to-many mapping is the inverse side, so the /@mappedBy/ element
+     must be used. 
+
+  Falling to specify the /mappedBy/ element in the /@OneToMany/ annotation will
+  cause the provider to treat is as a unidirectional one-to-many relationship
+  that is defined to use a join table. 
+
+* Many-to-Many Relationship
+  The only way to implement a many-to-many relationship is with a separate join
+  table. 
+
+  A join table consists simply of two foreign key or join columns to refer to
+  each of the two entity types in the relationship. 
+  
 
 
   
