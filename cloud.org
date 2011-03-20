@@ -1,0 +1,19 @@
+
+* Google AppEngine
+** Appegine operating system and hardware
+   There are ways to figure out what operating system or hardware a server is
+   using, but in the end it doesn't matter: the runtime environment is an
+   abstraction above the operating system that allows App Engine to manage
+   resource allocation, computation, request handling, scaling, and load
+   distribution without the application's involvement. 
+
+** Static File Servers
+   App Engine provides a separate set of servers dedicated to delivering static
+   files. These servers are optimized for both internal architecture and network
+   topology to handle requests for static resources. 
+
+** Transaction
+   If a user tries to update an entity while another user's update of the entit
+   is in progress, the datastore returns immediately with a concurrency failure
+   exception. It is often appropriate for the app to retry a bounced transaction
+   several times before declaring the condition an error, usually retrieving 
