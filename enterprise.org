@@ -1,0 +1,92 @@
+* Enterprise Integration Patterns
+** challenges and solutions in integration solution
+   Challenges:
+   - Network are unreliable
+   - Network are slow, much slower than local method call
+   - Any two applications are different
+   - Change is inevitable
+
+   Solutions:
+   - File Transfer
+   - Shared Database
+   - Remote Procedure Call
+   - Messaging
+
+** steps to transmit a message
+   1. Create
+   2. Send
+   3. Deliver
+   4. Receive
+   5. Process
+
+** Why messaging?
+   Messaging is more immediate thatn /File Transfer/, better encapsulated than
+   /Shared Database/, and more reliable than /Remote Procedure Invocation/. 
+   
+** Integration Challenges
+   - A failing or misbehaving integration solution can cost a business millions
+     of Dollars in lost orders, misrouted payments and disgruntled customers.
+   - This should remind us that the lack of interoperability between
+     "standard-compilant' products was one of the major stumbling blocks for
+     CORBA, which offered a sophisticated technical solution for system
+     integration.
+   - Existing XML Web Services standards address only a fraction of the
+     integration challenges. The existence of a common presentation (e.g. XML)
+     does not imply common semantics. 
+          
+
+** The Wild World of Integration
+   - Information Protals
+   - Data Replication
+   - Shared Business Functions
+   - Service-Oriented Architectures
+   - Distributed Business Process
+   - Business-to-Business Integration
+
+** service-oriented architecture
+   Service-oriented architecture(SOAs) blur the line between integration and
+   distributed applications. A new application can be developed using existing,
+   remote service that may be provided by other applications. Therefore, calling
+   a service may be considered integration between the two applications. On the
+   other hand a service-oriented architecture usually provides tools that make
+   calling an external service almost as simple as calling a local method
+   (performance considerations aside). Because all services are available in a
+   consistent manner, SOAs are sometimes referred to as “service bus
+   architectures”.
+
+** Loose Coupling
+   The core principle behind loose coupling is to reduce the assumptions two
+   parties(components, applications, services, programs, users) make about each
+   other when they exchange information. The more assumptions two parties make
+   about each other and the common protocol, the more efficient the
+   communication can be, but the less tolerant the solution is of interruptions
+   or changes because the parties are tightly coupled to each other.
+
+   "objects that interact in a distributed system need to be dealt with in ways
+   that are intrinsically different from objects that interact in a single
+   addresss space" -- Waldo
+
+   In summary, trying to portray remote communication as a variant of a local
+   method invocation is asking for trouble. Such architectures typically result
+   in brittle, hard to maintain and poorly scalable solutions. 
+
+
+   Like everything else in enterprise architecture, there is no single best
+   answer. Loose coupling provides important benefits such as flexibility and
+   scalability, but it introduces a more complex programming model and can make
+   designing, building and debugging solutions more difficult.
+
+
+** Why TCP/IP is not a good solution for integration?
+   TCP/IP integration solution is fast and cheap, but it results in a very
+   brittle solution because the two participating parties make the following
+   assumptions about each other:
+   - Platform Technology - internal representations of numbers and objects
+   - Location - hard-coded machine addresses
+   - Time - all components have to be avaiable at the same time, connection oriented
+   - Data Format - the list of parameters and their types must match
+
+** Loosely couple mechanism in Messaging
+   Mechanisms such as a common data format, queuing channels, and transformers
+   help turn a tightly coupled solution into a loosely coupled solution. 
+
