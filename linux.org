@@ -1,178 +1,16 @@
-* System Usage
-** Ctrl-q make you input key sequence into Emacs
-** Get UUID of hark disks
-   1. ls -l /dev/disk/by-uuid
-   2. blkid /dev/sda1
-
-** Shutdown system beep module
-   + "modeprobe -r pcspkr" remove the pcspkr module temporaryly to shutdown system beep
-   + edit /etc/modprobe.d/blacklist, add "blacklist pcspkr" into this file
-
-** Install new truetype font
-    + copy font to /usr/share/fonts/truetype/fontdir
-    + chmod to make font to be accessable
-    + execute commands below:
-#+BEGIN_SRC sh
-sudo mkfontscle
-sudo mkdfontdir
-sudo fc-cache -fv
-#+END_SRC
-
-** Setup keys for SSH login
-    + Firstly, run /ssh-keygen/ on host computer to generate the key pair.
-#+BEGIN_SRC sh
-      phenics $ ssh-keygen -f ~/.ssh/walle_rsa -t rsa
-#+END_SRC
-    + /ssh-keygen/ will generate a key pair inside .ssh directory: "walle_rsa"
-      and "walle_rsa.pub". public key should be stored in your server machine,
-      private key "walle_rsa" should be maintained by the user for connection.
-
-      So copy "walle_rsa.pub" to your server machine, and append it to
-      /.ssh/authorized_keys/.
-#+BEGIN_SRC sh
-      walle $ cat walle_rsa.pub >> .ssh/authorized_keys
-#+END_SRC
-
-    + use /ssh-agent/ to manage your keys, use /ssh-add/ command to add the key
-      to /ssh-agent/.
-#+BEGIN_SRC sh
-      phenics $ ssh-add .ssh/walle_rsa
-#+END_SRC
-
-    + Everything is done now.
-** Flow Control
-    Sometimes, terminal and /screen/ program may use "C-s" and "C-q" to be keys
-    for flow control. screen will freeze when type "C-s". It should be OK when
-    you use emacs in this kind of environment because emacs will disable flow
-    control when it starts. If it is not the case, then here is a method to
-    disable flow control in /screen/: add following setting in .screenrc.
-#+BEGIN_SRC sh
-    defflow off
-#+END_SRC
-
-    And here is a method for disabling flow control in shell: add following
-    setting in /bashrc/
-#+BEGIN_SRC sh
-    stty -ixon
-#+END_SRC
-
-** Parse dependency on Debian/GNU Linux					:apt:
-    Use apt-rdepends to get dependencies. Use bash utilities to filter
-    reduplicate informations:
-#+BEGIN_SRC sh
-    apt-rdepends  libavahi-client-dev libxml++2.6-dev | grep "Depends" | cut -d' ' -f 4 | sort -u
-#+END_SRC
-
-     You also could print the information into a dot file:
-#+BEGIN_SRC sh
-     apt-rdepends 'package' -d > dep.dot
-     dot -Tpng dep.dot -o dep.png
-#+END_SRC
-
-     What a great world in Debian/GNU Linux.
-
-** Tools to manage startup services				       :misc:
-   sysv-rc-conf
-** Wget usage							       :wget:
-*** How mirror a sit with wget?
-#+BEGIN_SRC sh
-    wget --mirror -k URL
-#+END_SRC
-    option -k will convert explicit path to be related path.
-
-*** How to download a directory via HTTP;
-#+BEGIN_SRC sh
-     wget -r -c -np -nc URL
-#+END_SRC
-     /-r/ option will make wget to download file recursively, but this option
-     will also lead wget to download files from up directories. /-np/ will
-     eliminate this.
-
-     /-np/ means no parent, wget will not ever ascend to the parent directory
-     when retrieving recursively.
-
-     /-nc/ means no clobber, When running Wget without -N, -nc, or -r,
-     downloading the same file in the same directory will result in the original
-     copy of file being preserved and the second copy being named file.1.  If
-     that file is downloaded yet again, the third copy will be named file.2, and
-     so on.  When -nc is specified, this behavior is suppressed, and Wget will
-     refuse to download newer copies of file
-
-** Expr								       :expr:
-   /expr/ is a command line expression evaluator. An importance note about expr
-   is taht arguments must be separated by spaces. otherwise it will no be
-   evaluated. For example, command "expr 3+5" will just return "3+5" as result,
-   but "expr 3 + 5" will return 8 as expected.
-** Double Parentheses Construct					       :bash:
-    Similar to the let command, the ((...)) construct premits arithmetic
-    expansion and evaluation. It also allows C-type manipulation of variables in
-    Bash. for example, following command could compute the number of line of all
-    java source files inside current directory and its subdirectories.
-#+BEGIN_SRC sh
-    num=0			# initilize the counter.
-    for file in $(find ./ -name "*.java" -print)
-    do
-	((num += $(wc -l $file | cut -d ' ' -f 1) ))
-    done
-    echo $num			# print result
-#+END_SRC
-    
-** Install-info							       :info:
-   install-info creates, updates or remove entries in the Info dir file. Before
-   doing any operation, be sure your info file is reside in the same directory
-   as the dir file. Dir file could be specified with the --infodir option, The
-   default value is "/usr/share/info". You just need to specify the info file
-   to install-info command, it will get other informations from the info file.
-
-   Some examples, assume we have a org-mode info file named to be org.
-*** Remove info
-#+BEGIN_SRC 
-     # install-info --remove org
-#+END_SRC
-     
-*** Add info
-    # install-info org
-    
-** Make Emacs support 256 colors in terminal			      :emacs:
-#+BEGIN_SRC sh
-    sudo apt-get install ncurses-term
-    export TERM=xterm-256color
-#+END_SRC
-    
-    If you are using screen, you probably need to set the TERM environment
-    variable for each newly opened windows. screen will set them to "screen" by
-    default. 
-#+BEGIN_SRC sh
-    #~/.screenrc
-    term term-256color
-#+END_SRC    
-        
-** Effect /etc/fstab without rebooting
-#+BEGIN_SRC sh
-    mount -av
-#+END_SRC
-    
-** Use mplayer to play iso DVD image				   :@mplayer:
-#+BEGIN_SRC sh
-     sudo mount -t iso9660 x.iso /path/to/mount/point -o loop
-     mplayer dvd://1 -dvd-device /path/to/mount/point
-#+END_SRC   
-** use mencoder to convert and merge media
-   To copy one part of the media to another file
-#+BEGIN_SRC sh
-   mencoder -oac copy -ovc copy -SS HH:MM:SS -endpos HH:MM:SS <SRC> -o <DST>
-#+END_SRC
-   Here, /-endpos/ option specifies the length of media to copy in time
-   duration. 
-
-   To convert media form one type 
+* Knowledge  
+** Apache HTTP Server UID/GID
+   On Linux as well as most other Unix-like systems, httpd is started as the
+   "root" user; UID=root, GID=root. This is necessary because only this user can
+   bind to port 80 and 443(anything below 1024 in fact).
    
-** find empty directories					       :find:
-#+BEGIN_SRC sh
-   find ./ -type d -empty -print
+   After http starts and binds to its ports(defined by the Listen statments in
+   httpd.conf), it changes user to that specified in httpd.conf. Typically:
+#+BEGIN_SRC text
+   User apache
+   Group apache
 #+END_SRC   
-   
-     
+
 * Programming
 ** Unix Network Programming
 *** head files
@@ -482,7 +320,7 @@ struct sockaddr_in {
     use awatch, watch, rwatch
 
 * Cookbook
-** I/O Multiplexing   
+** I/O Multiplexing						     :select:
 *** How to select
     select return 3 kinds of values
     - -1 :: means error occurred.
@@ -490,7 +328,179 @@ struct sockaddr_in {
            before descriptors are ready.
     - >1 :: specifies the number of descriptor that are ready.
 	   
+** Ctrl-q make you input key sequence into Emacs
+** Get UUID of hark disks
+   1. ls -l /dev/disk/by-uuid
+   2. blkid /dev/sda1
 
+** Shutdown system beep module
+   + "modeprobe -r pcspkr" remove the pcspkr module temporaryly to shutdown system beep
+   + edit /etc/modprobe.d/blacklist, add "blacklist pcspkr" into this file
+
+** Install new truetype font
+    + copy font to /usr/share/fonts/truetype/fontdir
+    + chmod to make font to be accessable
+    + execute commands below:
+#+BEGIN_SRC sh
+sudo mkfontscle
+sudo mkdfontdir
+sudo fc-cache -fv
+#+END_SRC
+
+** Setup keys for SSH login
+    + Firstly, run /ssh-keygen/ on host computer to generate the key pair.
+#+BEGIN_SRC sh
+      phenics $ ssh-keygen -f ~/.ssh/walle_rsa -t rsa
+#+END_SRC
+    + /ssh-keygen/ will generate a key pair inside .ssh directory: "walle_rsa"
+      and "walle_rsa.pub". public key should be stored in your server machine,
+      private key "walle_rsa" should be maintained by the user for connection.
+
+      So copy "walle_rsa.pub" to your server machine, and append it to
+      /.ssh/authorized_keys/.
+#+BEGIN_SRC sh
+      walle $ cat walle_rsa.pub >> .ssh/authorized_keys
+#+END_SRC
+
+    + use /ssh-agent/ to manage your keys, use /ssh-add/ command to add the key
+      to /ssh-agent/.
+#+BEGIN_SRC sh
+      phenics $ ssh-add .ssh/walle_rsa
+#+END_SRC
+
+    + Everything is done now.
+** Flow Control
+    Sometimes, terminal and /screen/ program may use "C-s" and "C-q" to be keys
+    for flow control. screen will freeze when type "C-s". It should be OK when
+    you use emacs in this kind of environment because emacs will disable flow
+    control when it starts. If it is not the case, then here is a method to
+    disable flow control in /screen/: add following setting in .screenrc.
+#+BEGIN_SRC sh
+    defflow off
+#+END_SRC
+
+    And here is a method for disabling flow control in shell: add following
+    setting in /bashrc/
+#+BEGIN_SRC sh
+    stty -ixon
+#+END_SRC
+
+** Parse dependency on Debian/GNU Linux					:apt:
+    Use apt-rdepends to get dependencies. Use bash utilities to filter
+    reduplicate informations:
+#+BEGIN_SRC sh
+    apt-rdepends  libavahi-client-dev libxml++2.6-dev | grep "Depends" | cut -d' ' -f 4 | sort -u
+#+END_SRC
+
+     You also could print the information into a dot file:
+#+BEGIN_SRC sh
+     apt-rdepends 'package' -d > dep.dot
+     dot -Tpng dep.dot -o dep.png
+#+END_SRC
+
+     What a great world in Debian/GNU Linux.
+
+** Tools to manage startup services				       :misc:
+   sysv-rc-conf
+** Wget usage							       :wget:
+*** How mirror a sit with wget?
+#+BEGIN_SRC sh
+    wget --mirror -k URL
+#+END_SRC
+    option -k will convert explicit path to be related path.
+
+*** How to download a directory via HTTP;
+#+BEGIN_SRC sh
+     wget -r -c -np -nc URL
+#+END_SRC
+     /-r/ option will make wget to download file recursively, but this option
+     will also lead wget to download files from up directories. /-np/ will
+     eliminate this.
+
+     /-np/ means no parent, wget will not ever ascend to the parent directory
+     when retrieving recursively.
+
+     /-nc/ means no clobber, When running Wget without -N, -nc, or -r,
+     downloading the same file in the same directory will result in the original
+     copy of file being preserved and the second copy being named file.1.  If
+     that file is downloaded yet again, the third copy will be named file.2, and
+     so on.  When -nc is specified, this behavior is suppressed, and Wget will
+     refuse to download newer copies of file
+
+** Expr								       :expr:
+   /expr/ is a command line expression evaluator. An importance note about expr
+   is taht arguments must be separated by spaces. otherwise it will no be
+   evaluated. For example, command "expr 3+5" will just return "3+5" as result,
+   but "expr 3 + 5" will return 8 as expected.
+** Double Parentheses Construct					       :bash:
+    Similar to the let command, the ((...)) construct premits arithmetic
+    expansion and evaluation. It also allows C-type manipulation of variables in
+    Bash. for example, following command could compute the number of line of all
+    java source files inside current directory and its subdirectories.
+#+BEGIN_SRC sh
+    num=0			# initilize the counter.
+    for file in $(find ./ -name "*.java" -print)
+    do
+	((num += $(wc -l $file | cut -d ' ' -f 1) ))
+    done
+    echo $num			# print result
+#+END_SRC
+    
+** Install-info							       :info:
+   install-info creates, updates or remove entries in the Info dir file. Before
+   doing any operation, be sure your info file is reside in the same directory
+   as the dir file. Dir file could be specified with the --infodir option, The
+   default value is "/usr/share/info". You just need to specify the info file
+   to install-info command, it will get other informations from the info file.
+
+   Some examples, assume we have a org-mode info file named to be org.
+*** Remove info
+#+BEGIN_SRC 
+     # install-info --remove org
+#+END_SRC
+     
+*** Add info
+    # install-info org
+    
+** Make Emacs support 256 colors in terminal			      :emacs:
+#+BEGIN_SRC sh
+    sudo apt-get install ncurses-term
+    export TERM=xterm-256color
+#+END_SRC
+    
+    If you are using screen, you probably need to set the TERM environment
+    variable for each newly opened windows. screen will set them to "screen" by
+    default. 
+#+BEGIN_SRC sh
+    #~/.screenrc
+    term term-256color
+#+END_SRC    
+        
+** Effect /etc/fstab without rebooting
+#+BEGIN_SRC sh
+    mount -av
+#+END_SRC
+    
+** Use mplayer to play iso DVD image				   :@mplayer:
+#+BEGIN_SRC sh
+     sudo mount -t iso9660 x.iso /path/to/mount/point -o loop
+     mplayer dvd://1 -dvd-device /path/to/mount/point
+#+END_SRC   
+** use mencoder to convert and merge media
+   To copy one part of the media to another file
+#+BEGIN_SRC sh
+   mencoder -oac copy -ovc copy -SS HH:MM:SS -endpos HH:MM:SS <SRC> -o <DST>
+#+END_SRC
+   Here, /-endpos/ option specifies the length of media to copy in time
+   duration. 
+
+   To convert media form one type 
+   
+** find empty directories					       :find:
+#+BEGIN_SRC sh
+   find ./ -type d -empty -print
+#+END_SRC   
+   
 	    
 * Org Configuration
 #+STARTUP: hidestars

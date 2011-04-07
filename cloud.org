@@ -1,4 +1,3 @@
-
 * Google AppEngine
 ** Appegine operating system and hardware
    There are ways to figure out what operating system or hardware a server is
@@ -17,3 +16,93 @@
    is in progress, the datastore returns immediately with a concurrency failure
    exception. It is often appropriate for the app to retry a bounced transaction
    several times before declaring the condition an error, usually retrieving 
+** Storage
+   As with request handling, Google App Engine manages the scaling and
+   maintenance of data storage automatically. Your application interacts with an
+   abstract model that hides the details of managing and growing a pool of data
+   servers. 
+   
+** Keys
+   An entity has a /key/ that uniquely identifies the object across the entire
+   system. If you have a key, you can fetch the entity for the key
+   quickly. There are three parts of the key:
+   - ID ::
+     ID ensures that nothing else about the key can collide with the entities
+     of any other applicatoin. 
+
+   - kind ::
+     An entity's kind categories the entity for the purposes of queries, and for
+     ensuring the uniqueness of the rest of the key. 
+
+   - entity ID ::
+     This can be an arbitrary string specified by the app, or it can be
+     generated automatically by the datastore. 
+
+   Once an entity has been created, its key cannot be changed. This applies to
+   all parts of its key, including the kind and the key name and ID.
+
+** Datastore Queries
+   Most database systems provide a mechanism for executing queries, and the App
+   Engine datastore is no exception. But App Engine's technique differs
+   significantly from that of tranditional database systems.
+
+   App Engine database maintains an index for every query the application is
+   going to perform. 
+** Datastore Transaction
+   In database terms, the act of updating an entity is /atomic/. 
+
+   The App Engine datastore provides transactions with strong consistency and
+   low overhead. It does this by limiting the scope of transactions: a single
+   transaction can only read or write to entities that belong to a single
+   /entity group/.
+
+   The datastore uses entity groups to determine what happens when two processes
+   attempt to update data in the entity group at the same time. When this
+   happens, the first update that completes "wins", and the other update is
+   canceled. App Engine notifies the process whose update is canceled by raising
+   an exception. This stype of managing concurrent access is known as
+   /optimistic concurrentcy control/. 
+
+   Most web applications have only a small number of users updating the same
+   piece of data, so concurrency failures are rare.
+
+** Entity Group
+   Be especially careful if the number of simultaneous updates to a single group
+   grows as your application gets more users. In this case, you usu- ally want
+   to spread the load across multiple entity groups, and increase the number of
+   entity groups automatically as the user base grows. Scal- able division of a
+   data resource like this is known as sharding.
+
+   Also be aware that some data modeling tasks may not be practical on a large
+   scale. Incrementing a value in a single datastore entity every time any user
+   visits the site’s home page is not likely to work well with a distributed
+   strong consistency data system.
+
+** Keys, Paths, and Ancestors
+   To create an entity in a group with other entities, you associate it with the
+   key of another entity from that group. The existing entity becomes the new
+   entity’s parent, forming a path of ancestor relationships down to a root
+   entity that does not have a parent. This path becomes part of the new
+   entity’s key. Every entity whose key begins with the same root is in the same
+   group, including the root entity itself.
+
+   When you create an entity and do not specify a parent, the entity is created
+   in a new group by itself. The new entity is the root of the new group.
+
+** App Engine memcache
+   The App Engine distributed memory cache service, known as /memchache/ in
+   honor of the original /memcached/ system that it resembles, stores key-value
+   pairs. You can set a value with a key, and get the value given the key. A
+   value can be up to a megabyte in size. A key is up to 250 bytes, and the API
+   accepts larger keys and uses a hash algorithm to convert them to 250 bytes.
+
+   This is so often the case with web applications that a beset practice is to
+   cache aggresively. Look through your application for opportunities to make
+   this trade-off, and implement caching whenever the same value is needed an
+   arbitrary number of times., especially if that number increases with
+   traffic. 
+
+
+** GFS Operation Log
+   
+* 

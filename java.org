@@ -1226,7 +1226,27 @@ must support a high degree of concurrency safely and rebostly.
   
 
 
-  
+* JSP Model
+** Model 1 Architecture
+   In model 1 architecture, each JSP page is entrusted to deal with its request
+   entirely by itself, thereby generating a response and sending it back to the
+   client, and for this reason it's often known as page-centric. JavaBeans
+   components are often used to model business logic. 
+
+   Several problems with Model 1 architecture:
+   - Maintainability ::
+     JSP page is responsible for business handling and make it to be very
+     complicated to be maintained. JSP pages is more suitable for handling
+     presentation other than business logic.
+
+   - Reusability ::
+     Most processing logic is in JSP pages, which is not designed to be reused. 
+
+   - Security ::
+     JSP pages are responsible for handling its security processing, which is
+     likely to make security problems.
+
+
 * Org Configuration
 #+STARTUP: hidestars
 #+TAGS: @EJB3 @Ant @AOP
