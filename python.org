@@ -1,8 +1,4 @@
-* Language
-
-* Package
-
-* Tools
+* Knowledge
 ** How to install python packages?
    Install python-setuptools firstly, then use easy_install to install packages
    listed on http://pypi.python.org. For example, if you want to instlal
@@ -34,7 +30,55 @@
 #+END_SRC
     will generate html output.
 
-* Cookbook
+** Metaclass programming in Python				  :metaclass:
+   Classes are also objects in python, creation and initialization of classes
+   are controlled by metaclass in python. In one hand, python treat classes as
+   if they are normal objects, but in another hand, classes also have some
+   special meaning other than objects. 
 
+*** __new__ and __init__
+    As objects, classes are created and initialized by `__new__` and `__init__`
+    methods defined in its metaclass. The difference is that when those two
+    methods are called, they are passed in with predefined sepcial parameters:
+#+BEGIN_SRC python
+  class Meta(type):
+      def __new__(metacls, name, bases, dict):
+          type.__new__(cls, name, bases, dict)
+  
+      def __init__(cls, name, bases, dict):
+          type.__init__(cls, name, bases, dict)
+#+END_SRC
+    The first parameters be passed to `__new__` and `__init__` are different,
+    `__new__` takes the metaclass itself as the first parameter, but `__init__`
+    takes the reference to class object that was created as the first
+    parameter. It is the same as ordinary classes definition, in an ordinary
+    class definition, `__new__` takes the first parameter to be the class
+    itself, but `__init__` takes the objected to be created as first parameter.
+    
+*** __call__
+    We created a object by actually calling the Class, so as usual callable
+    object invocation, we actually calling the metaclass's `__call__`
+    method. For example:
+#+BEGIN_SRC python
+    var = Some_Class(foo, bar)
+
+    # is actully 
+
+    var = Meta.__call__(Some_Class, foo, bar)
+#+END_SRC    
+    This `__call__` is defined in metaclass of that class and will call class's
+    `__new__` and `__init__` by default as following example:
+    
+#+BEGIN_SRC python
+  class Meta(type):
+      def __call__(cls, *args, **kwargs):
+          instance = cls.__new__(cls, *args, **kwargs)
+          if instance:
+              cls.__init__(instance, *args, **kwargs)
+#+END_SRC
+
+
+* Cookbook
+  
 * Org Configuration
 #+STARTUP: hidestars
