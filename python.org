@@ -53,7 +53,7 @@
 #+BEGIN_SRC python
   class Meta(type):
       def __new__(metacls, name, bases, dict):
-          type.__new__(cls, name, bases, dict)
+          type.__new__(metacls, name, bases, dict)
   
       def __init__(cls, name, bases, dict):
           type.__init__(cls, name, bases, dict)
@@ -87,8 +87,29 @@
               cls.__init__(instance, *args, **kwargs)
 #+END_SRC
 
+** How to call super __new__ and __init__ in metaclass 		  :metaclass:
+   /__new__/ is a implicit static method, which means you nerver decorate it with
+   the /@staticmethod/ decorator. /__init__/ is a instance method. When we
+   define those two method, most of the time, we may need to call corresponding
+   method in super class firstly. 
 
-* Cookbook
-  
+   /__new__/ and /__init__/ is defined with following prototype:
+
+#+BEGIN_SRC python
+  class Meta(type):
+      def __new__(metacls,              # metaclass itself
+                  name,                 # name of the class to define
+                  bases,                # base class tuple
+                  dict)                 # class object dict
+      
+      def __init__(cls,                 # class object, just like self in object definition
+                   name,                # name of the class
+                   bases,               # base class tuple
+                   dict)                # class object dict
+#+END_SRC
+
+  Since /__new__/ is static method and the first parameter is actully the
+  parameter, 
+
 * Org Configuration
 #+STARTUP: hidestars
