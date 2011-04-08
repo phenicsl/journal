@@ -1,4 +1,14 @@
 * Knowledge
+** DSU Idiom							      :@Lang:
+   DSU idiom is so named as Decorate-Sort-Undecorate after its three steps:
+
+   - First, the initial list is decorated with new values that control the sort
+     order.
+   - Second, the decorated list is sorted.
+   - Finally, the decorations are removed, creating a list that contains only
+     the initial values in the new order.
+
+* Cookbook
 ** How to install python packages?
    Install python-setuptools firstly, then use easy_install to install packages
    listed on http://pypi.python.org. For example, if you want to instlal
