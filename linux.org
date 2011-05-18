@@ -501,6 +501,35 @@ sudo fc-cache -fv
    find ./ -type d -empty -print
 #+END_SRC   
    
-	    
+** string testing						       :shell:
+   bash use "-z" and "-n" for string comparison. "-z" returns True if parameter
+   is null(has length 0), could be used like this:
+#+BEGIN_SRC sh
+     var=''
+     if [ -z "$var" ]
+     then
+         echo "var is null" # will be printed since var has length 0
+     fi
+#+END_SRC
+     
+   The point here is you must quote the variable under test with double
+   quotes. Or the result of testing may not be what you expected:   
+#+BEGIN_SRC sh
+   var=' '
+   if [ -z $var ]
+   then
+       echo "var is null" # will be printed since $var is not quoted
+   fi
+
+   if [ -z "$var" ]
+   then
+       ehco "var is null" # will not be printed
+   fi
+#+END_SRC
+
+   If $var is not quoted, then /[ -z $var ]/ is just like /[ -z ]/ that will
+   always return False.
+
+
 * Org Configuration
 #+STARTUP: hidestars

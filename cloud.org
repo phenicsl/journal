@@ -105,4 +105,36 @@
 
 ** GFS Operation Log
    
-* 
+
+* Scaling MongoDB
+** Mongos
+   mongos is the interaction point between users and the cluster. Its job is to
+   hide all of the gooey internals of sharding and present a clena,
+   single-server interface to the user. 
+   
+   Mongos forwards all user requests to the appropriate shards.
+
+** Config Server
+   mongos processes don't actually store any data persistently, it is stateless
+   so the configuration of a cluster is held on special mongods called /config
+   servers/.
+
+
+** The Anatomy of a Cluster
+   A MongoDB cluster basically consists of three types of processes: the shards
+   for actually storing data, the mongos processes for routing requests to the
+   correct data, and the config servers, for keeping track of the cluster’s
+   state
+
+   Each of the components above is not "a machine." mongos processes are usually
+   run on appservers. Config servers, for all their importance, are pretty
+   lightweight and can basically be run on any machine avaiable. Each shard
+   usually consists of multiple machines, as that's where the data actually
+   lives. 
+
+** Unique Indexes
+   The only way to guarantee no duplicates between shards in the general case is
+   to lock down the entire cluster every time you do a write until the write has
+   been confirmed successful.
+
+   
