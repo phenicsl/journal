@@ -530,6 +530,14 @@ sudo fc-cache -fv
    If $var is not quoted, then /[ -z $var ]/ is just like /[ -z ]/ that will
    always return False.
 
-
+** mencoder convert from DVD to AVI
+#+BEGIN_SRC sh
+mencoder dvd://$title -dvd-device "$input" \
+-oac mp3lame \
+-lameopts mode=2:cbr:br=96:vol=0 \
+-ovc lavc \
+-lavcopts vcodec=mpeg4:vbitrate=400:vhq:autoaspect \
+-o "$prefix-$title.avi"
+#+END_SRC   
 * Org Configuration
 #+STARTUP: hidestars
