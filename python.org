@@ -111,5 +111,32 @@
   Since /__new__/ is static method and the first parameter is actully the
   parameter, 
 
+** Package, Module and Import
+   when import from a package or module, `from XXX import YYY` statement also
+   will be executed. Then YYY will actually become one variable inside the
+   imported module, and could be accessed via `module.YYY`. For example:
+#+BEGIN_SRC python
+   # module argvs
+   from sys import argv
+
+   # module test
+   import argvs
+   
+   # argv could be accessed with argvs.argv
+   print argvs.argv     # => []
+#+END_SRC
+
+   When import a pacakge with `import package` or `from pacakge import XXX`, we
+   actually will execute `package/__init__.py` firstly, so most of the time, we
+   will import all necessary package-scope variables from submodules in the
+   `__init__.py` and make them to be package-scope variables. 
+
+   Another worth-mentioned feature is that when execute `from XXX import *`,
+   python actually will check `XXX.__all__` firstly to see if programmer has
+   restricted all variables that could be imported. So a best here I can suggest
+   is that define `__all__` attribute inside each submodules inside a package
+   and use `from submodule import *` in the `__init__.py` file, that way, we may
+   restrict the definition of package-scop public variables in different
+   submodules. 
 * Org Configuration
-#+STARTUP: hidestars
+
