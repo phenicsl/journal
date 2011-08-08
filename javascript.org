@@ -1,4 +1,3 @@
-#+STARTUP: hidestars
 * Javascript  
 ** Basic Language Feature   
 *** String Concatenation 
@@ -343,4 +342,97 @@ $(function() {
    even though it is only used within the context of function scope.
 
 
+* Prototype and Classical Object Model in Javascript
+** Prototype and Constructor Function
+   Javascript uses a mixsure between prototype and classical object model. Which
+   means it use prototype for inheritance implementation but also made
+   restriction on prototype model to make it be classical like.
    
+   As other prototype object language, a javascript object has a attribute
+   /proto/ reference to its prototype object, which is used as the blueprint of
+   this object. Or you could consider that this prototype plays the role of
+   class in classical object-oriented language. The prototype of this object is
+   also a object, so it may have its own prototype object, all those prototypes
+   are chained together to be a prototype chain. When a specfic method or
+   attribute is accessed via this object, javascript interpreter may search
+   against this chain to find a proper definition.
+  
+   The difference between javascript and pure ptototype object-oriented language
+   is that it uses constructor method to generate new objects rather than clone
+   from exist prototype objects. Constructor function could be any function, when
+   constructor function is called with the /new/ operator, it will return an
+   object with prototype object set to be the constructor's prototype. So, to
+   define a bunch of objects, we may first create a constructor function, and
+   define attributes and methods in its prototype object and then create object
+   via new operator. as following example:
+#+BEGIN_SRC javascript
+  var Animal = function(name){
+      this.name = name;
+  }
+  
+  Animal.prototype.eat = function(){
+      console.log(this.name + " is eating");
+  }
+  
+  cat = new Animal("Cat");
+  dog = new Animal("Dog");
+  
+  console.log(cat.eat());         // Cat is eating
+  console.log(dog.eat());         // Dog is eating  
+#+END_SRC  
+
+** Prototype-based Inheritance
+   Javascript inheritance is implemented via prototype chain. To add a base a
+   base class, you should add a prototype for your object's prototype. we can
+   think of the relationship as following:
+#+BEGIN_SRC
+   object --> prototype(class) --> prototype2(base class)
+#+END_SRC
+   
+   So, according to above example, what we should do is create a new constructor
+   function which kind represent the class here. And set this constructor
+   function's prototype to be base class's object. As following example:
+#+BEGIN_SRC javascript
+  var Animal = function(name){
+      this.name = name;
+  }
+  
+  Animal.prototype.eat = function(){
+      console.log(this.name + " is eating");
+  }
+
+  var Cat = function(){
+  }
+
+  Cat.prototype = new Animal("Cat");
+  Cat.prototype.meow = function(){
+      console.log(this.name + " meow");
+  }
+  
+  var cat = new Cat();
+  cat.eat();			// Cat is eating
+  cat.meow();			// Cat meow
+
+#+END_SRC   
+  Int this example, Cat inherited from Animal and also defined its own meow;
+  When /cat.eat()/ is called, it will search in reverse order in the prototype
+  chain and finally find /Animal.eat/ to call.
+
+** Extends and Implements in Mootools
+   Javascript library mootools provides two key words /Extends/ and /Implements/
+   to support class-style inheritance and mixin. 
+
+   The actually operation of /Extends/ is actually create a new instance of what
+   will be extended and set it to be the prototype of this class, which is
+   actually also a constructor function, and then all properties defined in the
+   class definition will be assigned to this prototype object. of course, it
+   satisfy the concept that prototype is actually the class definition. But
+   /Implements/ is different, since they are used to simulate mixin, here the
+   operaition of /Implements/ would be parse the definition of what needt to be
+   implemented and add all its properties into current prototype object. That is
+   mixin.
+
+** Java Array
+   A javascript array is nothing more than an object with numeric indices as
+   keys and with a dynamic property /length/ - plus additional methods inherited
+   from Array.proptotype.
