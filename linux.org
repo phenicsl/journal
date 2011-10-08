@@ -36,10 +36,11 @@ struct sockaddr_in {
   char            sin_zero[8];  /* unused */
 };
 #+END_SRC
-       But actually, the sin\_len field is optional. In my linux implementation,
-       there is no sin\_len field in the definition of /struct sockaddr\_in/,
-        and sin\_family is defined to be u\_int16\_t to occupy 2 bytes, so /struct
-        sockaddr\_in/  structure is still 20 bytes size.
+
+But actually, the sin\_len field is optional. In my linux implementation,
+there is no sin\_len field in the definition of /struct sockaddr\_in/,
+and sin\_family is defined to be u\_int16\_t to occupy 2 bytes, so /struct
+sockaddr\_in/  structure is still 20 bytes size.
 
 *** buffer size and limitations
     | item          |  size | description                                           |
@@ -58,9 +59,9 @@ struct sockaddr_in {
 
 *** Functions
 **** connect
-     + If /connect/ fails, the socket is no longer useable and must be closed. We
-       cannot call /connect/ again on the socket. Each time connect fails, we
-       must close the socket descriptor and call socket again.
+     + If /connect/ fails, the socket is no longer useable and must be
+       closed. We cannot call /connect/ again on the socket. Each time connect
+       fails, we must close the socket descriptor and call socket again.
 **** bind
      + With IPv4, wildcard address is specified by the constant /INADDR\_ANY/, whose
        value is normally 0.
@@ -117,6 +118,7 @@ struct sockaddr_in {
      scheduling entity. Its implementaiton employ Linux *clone* system call. In
      NPTL, thread synchronization primitives(mutexes, thread joining, etc.) are
      implemented using the Linux futex system call.
+
 *** TODO Socket and Message Queues are thread safe, how?
     
 ** Syslog
