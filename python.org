@@ -8,6 +8,25 @@
    - Finally, the decorations are removed, creating a list that contains only
      the initial values in the new order.
 
+** bisect
+   There are two bisect methods in bisect module:
+   - bisect_left
+   - bisect_right
+
+   According to the manual:
+   - `bisect_left`, If item is already present in list, the insertion point will
+   be before (to the left of) any existing entries.
+
+   - `bisect_right`, will return an insertion point which comes after (to the
+   right of) any existing entries of item in list.
+
+   So, what exactly does this mean? Let's put it in a much simple way. 
+   - `bisect_left`, if item "y" is present, then it will return the index of
+     the first "y" in the sequence.
+
+   - `bisect_right`, if item "y" is present, then it will return the index of the
+     first item "x" that has "x > y".
+
 * Cookbook
 ** How to install python packages?
    Install python-setuptools firstly, then use easy_install to install packages

@@ -1,0 +1,34 @@
+Nutshell
+========
+
+BASE Revision
+-------------
+``BASE`` revision is different from ``HEAD`` revision. ``HEAD`` is the latest
+revision in the repository. ``BASE`` is the last revision you have obtained from
+the repository. 
+
+When you revert, your workspace go back to matching the ``BASE`` revision. 
+
+
+Cookbook
+========
+
+check where a branch was created from
+-------------------------------------
+
+::
+
+  svn log -v --stop-on-copy
+
+``--stop-on-copy`` option will let ``svn log`` command stop on the 
+
+create branch
+-------------
+::
+
+   svn copy </path/to/trunk> </path/to/branch> -m "why I create this branch"
+
+``svn copy`` uses a cheap strategy to copy directories, it will not dupliate any
+data but just point to the source directory.
+
+   
