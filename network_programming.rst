@@ -19,3 +19,13 @@ breaks the connection. The ``EPIPE`` error is still returned as normal. A socket
 option ``SO_NOSIGPIPE`` have the same effect.
 
 
+------
+Signal
+------
+
+The basic rule that applies to signal is when a process is blocked in a slow
+system call and the process catches a signal and the signal handler returns, the
+system can return an ``EINTR`` error. Some kernel automatically restart `some`
+interrupted system calls. 
+
+
