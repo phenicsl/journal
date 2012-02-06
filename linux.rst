@@ -21,7 +21,5 @@ Secondly, a in-place edit option is specified here to replace 'cscope.files' in
 place. 
 
 After some study, I also found that you may use *"\%$entry%d"* here to specify
-the address without escaping entry.
-
-
+the address without escaping the path delimiter.
 

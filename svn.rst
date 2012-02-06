@@ -49,3 +49,14 @@ back to trunk since something in the branch are already in trunk.
 
 
 **svn 1.5** added a "automatic merge tracking" to track merge history.
+
+checkout a specific version of file
+-----------------------------------
+::
+    $ svn export -r VERSION URL
+
+`svn export` could be used to checkout a specific version of file. `checkout`
+command could only be used at directory level.
+
+
+
