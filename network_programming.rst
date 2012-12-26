@@ -1,8 +1,6 @@
-===================
 Network Programming
 ===================
 
------------
 Advanced IO
 -----------
 
@@ -19,7 +17,6 @@ breaks the connection. The ``EPIPE`` error is still returned as normal. A socket
 option ``SO_NOSIGPIPE`` have the same effect.
 
 
-------
 Signal
 ------
 
